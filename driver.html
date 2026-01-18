@@ -32,9 +32,17 @@
             margin-bottom: 20px;
             background: #1a1a1a;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            position: relative;
         }
         .app-logo { height: 50px; width: auto; display: block; margin: 0 auto 8px auto; }
         .header-title { color: #D4AF37; margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* LOGOUT BUTTON */
+        .logout-btn {
+            position: absolute; top: 20px; right: 15px;
+            background: transparent; border: 1px solid #444; color: #888;
+            padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer;
+        }
 
         /* ORDER CARD */
         .order-card {
@@ -133,32 +141,72 @@
         }
         .fab-pulse { animation: pulse-white 2s infinite; }
         @keyframes pulse-white { 0% { box-shadow: 0 0 0 0 rgba(212, 68, 55, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(212, 68, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 68, 55, 0); } }
+
+        /* --- LOGIN OVERLAY --- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #121212; z-index: 10000;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .login-box {
+            background: #1e1e1e; padding: 30px; border-radius: 8px;
+            border: 2px solid #D4AF37; text-align: center; width: 85%; max-width: 350px;
+        }
+        .login-box input { 
+            width: 100%; padding: 15px; margin-bottom: 20px; 
+            background: #111; color: white; border: 1px solid #444; 
+            text-align: center; font-size: 2rem; letter-spacing: 5px; font-weight: bold;
+            border-radius: 5px; box-sizing: border-box;
+        }
+        .login-box button { 
+            width: 100%; padding: 15px; background: #D4AF37; 
+            border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; 
+            border-radius: 5px; color: black;
+        }
+        /* Hidden Main App */
+        #driver-app { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="driver-header">
-        <img src="logo.png" alt="Zafran" class="app-logo">
-        <h2 class="header-title">Driver Dashboard</h2>
-    </div>
-
-    <div class="container">
-        <div id="driver-orders">
-            <div class="empty-state">
-                <span class="material-icons" style="font-size: 64px; opacity:0.3;">local_shipping</span>
-                <p style="margin-top:10px;">Waiting for deliveries...</p>
-            </div>
+    <div id="login-overlay">
+        <div class="login-box">
+            <img src="logo.png" alt="Zafran" style="height:60px; margin-bottom:20px;">
+            <h3 style="color:#D4AF37; margin-bottom:20px;">DRIVER LOGIN</h3>
+            <form id="pin-form">
+                <input type="tel" id="driver-pin" placeholder="••••••" maxlength="6" required pattern="[0-9]*" inputmode="numeric">
+                <button type="submit">ENTER</button>
+                <p id="login-error" style="color:red; margin-top:15px; font-size:0.9rem;"></p>
+            </form>
         </div>
     </div>
 
-    <a href="tel:+4922511290950" class="fab-restaurant fab-pulse">
-        <span class="material-icons" style="font-size: 32px;">phone_in_talk</span>
-    </a>
+    <div id="driver-app">
+        <div class="driver-header">
+            <button onclick="logout()" class="logout-btn">Logout</button>
+            <img src="logo.png" alt="Zafran" class="app-logo">
+            <h2 class="header-title">Driver Dashboard</h2>
+        </div>
+
+        <div class="container">
+            <div id="driver-orders">
+                <div class="empty-state">
+                    <span class="material-icons" style="font-size: 64px; opacity:0.3;">local_shipping</span>
+                    <p style="margin-top:10px;">Waiting for deliveries...</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="tel:+4922511290950" class="fab-restaurant fab-pulse">
+            <span class="material-icons" style="font-size: 32px;">phone_in_talk</span>
+        </a>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script> 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
     <script src="driver-script.js"></script> 
