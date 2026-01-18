@@ -144,7 +144,7 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// --- 3. MAIN SCRIPT LOGIC (Inside Event Listener) ---
+// --- 3. MAIN SCRIPT LOGIC ---
 document.addEventListener("DOMContentLoaded", () => {
 
     // --- DOM Elements ---
@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dismissWaiterBtn = document.getElementById('dismiss-waiter-btn');
     let currentWaiterCallId = null;
 
-    // Payment Modal Elements (The New Integration)
+    // Payment Modal Elements
     const paymentModal = document.getElementById('payment-modal');
     const paymentItemsList = document.getElementById('payment-items-list');
     const paymentTotalDisplay = document.getElementById('payment-total-display');
@@ -198,29 +198,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const KITCHEN_PASSWORD = "zafran"; 
     const TOTAL_DINE_IN_TABLES = 12;
 
-   // --- 4. NEW SECURE LOGIN LOGIC ---
+   // --- 4. SECURE LOGIN LOGIC ---
 if (loginButton) {
     loginButton.addEventListener('click', () => {
-        // 1. Check if the staff typed the correct PIN ("zafran")
         if (passwordInput.value === KITCHEN_PASSWORD) {
-
-            // 2. If correct, secretly log them in with the real account
             const hiddenEmail = "webmaster@zafraneuskirchen.de";
             const hiddenPass  = "!Zafran2025";
 
-            // Optional: Show loading state
             const originalBtnText = loginButton.innerText;
             loginButton.innerText = "Verbinden...";
             loginButton.disabled = true;
 
             firebase.auth().signInWithEmailAndPassword(hiddenEmail, hiddenPass)
             .then((userCredential) => {
-                // Success!
                 loginOverlay.classList.add('hidden');
                 kdsContentWrapper.style.opacity = '1';
 
-                // --- IMPORTANT: AUDIO UNLOCK (Preserved) ---
-                // This allows sounds to play on mobile devices
+                // Unlock Audio
                 serviceBell.play().then(() => {
                     serviceBell.pause();
                     serviceBell.currentTime = 0;
@@ -232,14 +226,11 @@ if (loginButton) {
                 console.error("Login Error:", error);
                 loginError.innerText = "Systemfehler: Login nicht möglich.";
                 loginError.style.display = 'block';
-                
-                // Reset button so they can try again
                 loginButton.innerText = originalBtnText;
                 loginButton.disabled = false;
             });
 
         } else {
-            // Wrong PIN entered
             loginError.innerText = "Falsches Passwort";
             loginError.style.display = 'block';
         }
@@ -248,14 +239,13 @@ if (loginButton) {
     passwordInput.addEventListener('keyup', (e) => e.key === 'Enter' && loginButton.click());
 
 } else {
-    // Fallback if no login button is present
     initializeWaiterStation();
 }
 
     // --- 5. Main Waiter Station Functions ---
 
     function createDineInTables() {
-        if(!dineInGrid) return; // Guard for Records Page
+        if(!dineInGrid) return; 
         dineInGrid.innerHTML = '';
         for (let i = 1; i <= TOTAL_DINE_IN_TABLES; i++) {
             const tableBox = document.createElement('div');
@@ -277,7 +267,6 @@ if (loginButton) {
     function initializeWaiterStation() {
         createDineInTables();
 
-        // Button Listeners (Only if elements exist)
         if(dineInGrid) {
             dineInGrid.querySelectorAll('.clear-table-btn').forEach(btn => {
                 btn.addEventListener('click', () => handleClearOrder(btn.dataset.tableId, 'dine-in', btn));
@@ -288,9 +277,9 @@ if (loginButton) {
             });
         }
 
-        // Firebase Listener - Handles Orders & Updates UI
+        // --- UPDATED LISTENER: NOW LISTENS FOR 'out_for_delivery' AND 'delivered' ---
         db.collection("orders")
-          .where("status", "in", ["new", "seen", "ready", "cooked"]) 
+          .where("status", "in", ["new", "seen", "ready", "cooked", "out_for_delivery", "delivered"]) 
           .onSnapshot(
             (snapshot) => {
                 if(connectionIconEl) connectionIconEl.textContent = '✅'; 
@@ -299,7 +288,6 @@ if (loginButton) {
                     const orderData = change.doc.data();
                     const isOnline = orderData.orderType === 'pickup' || orderData.orderType === 'delivery';
 
-                    // Waiter Call
                     if (orderData.orderType === 'assistance') {
                         if (change.type === "added") showWaiterCall(orderData.table, change.doc.id);
                         if (change.type === "removed" && currentWaiterCallId === change.doc.id) stopWaiterSound();
@@ -372,7 +360,7 @@ if (loginButton) {
         closeReadyPopupBtn.addEventListener('click', () => readyPopup.classList.add('hidden'));
     }
 
-    // --- PAYMENT SUMMARY LOGIC (Enhanced with Discount) ---
+    // --- PAYMENT SUMMARY LOGIC ---
     function showPaymentSummary(ordersList, title) {
         ordersToArchive = ordersList; 
         
@@ -384,7 +372,6 @@ if (loginButton) {
             let couponName = null;
 
             ordersList.forEach(order => {
-                // 1. Calculate Items Total
                 order.items.forEach(item => {
                     let price = item.price;
                     if (!price) {
@@ -409,39 +396,33 @@ if (loginButton) {
                     paymentItemsList.appendChild(row);
                 });
 
-                // 2. Extract Discount Info
                 if (order.discount && !isNaN(order.discount)) {
                     totalDiscount += parseFloat(order.discount);
                 }
                 
-                // Get Coupon Name
                 if (order.coupon && order.coupon !== "None") {
                     couponName = order.coupon;
                 } else if (order.couponCode) {
-                    couponName = order.couponCode; // Legacy support
+                    couponName = order.couponCode; 
                 }
             });
 
-            // 3. Show Breakdown if Discount exists
             if (totalDiscount > 0) {
-                // Subtotal Row
                 const subRow = document.createElement('div');
                 subRow.style.display = "flex";
                 subRow.style.justifyContent = "space-between";
                 subRow.style.padding = "10px 0 5px 0";
                 subRow.style.color = "#aaa";
-                subRow.innerHTML = `<span>Zwischensumme:</span><span>${subTotal.toFixed(2)} €</span>`;
+                subRow.style.innerHTML = `<span>Zwischensumme:</span><span>${subTotal.toFixed(2)} €</span>`;
                 paymentItemsList.appendChild(subRow);
 
-                // Discount Row
                 const discountRow = document.createElement('div');
                 discountRow.style.display = "flex";
                 discountRow.style.justifyContent = "space-between";
                 discountRow.style.padding = "0 0 10px 0";
-                discountRow.style.color = "#ff4444"; // Red
+                discountRow.style.color = "#ff4444"; 
                 discountRow.style.fontWeight = "bold";
                 
-                // Show "SPAR10 (10%)" or fallback
                 const discountText = couponName ? couponName : 'Discount';
                 
                 discountRow.innerHTML = `
@@ -451,7 +432,6 @@ if (loginButton) {
                 paymentItemsList.appendChild(discountRow);
             }
             
-            // 4. Final Total
             const finalTotal = Math.max(0, subTotal - totalDiscount);
             if(paymentTotalDisplay) paymentTotalDisplay.innerText = finalTotal.toFixed(2) + " €";
         }
@@ -477,19 +457,17 @@ if (loginButton) {
         try {
             const batch = db.batch();
             for (const order of ordersToArchive) {
-                // Get the final displayed amount
                 const finalAmountStr = document.getElementById('payment-total-display').innerText.replace(' €','').replace(',','.');
                 
                 const archiveRef = db.collection("archived_orders").doc(`archive-${order.id}`);
                 batch.set(archiveRef, {
                     ...order,
                     status: 'paid', 
-                    paidAmount: parseFloat(finalAmountStr), // Save exact final total
+                    paidAmount: parseFloat(finalAmountStr), 
                     closedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     day: new Date().toISOString().split('T')[0] 
                 });
                 
-                // Delete from active 'orders'
                 const docRef = db.collection("orders").doc(order.id);
                 batch.delete(docRef);
             }
@@ -642,13 +620,19 @@ if (loginButton) {
         }
     }
 
-    // --- RENDER ONLINE ORDERS ---
+    // --- RENDER ONLINE ORDERS (UPDATED for Cash Control) ---
     function renderOnlineGrid() {
         if(!pickupGrid) return;
         pickupGrid.innerHTML = ''; 
         
         const onlineOrders = Object.values(allOrders).filter(o => o.orderType === 'pickup' || o.orderType === 'delivery');
-        onlineOrders.sort((a, b) => a.createdAt.seconds - b.createdAt.seconds);
+        
+        // Custom Sort: Delivered (Cash Check) First!
+        onlineOrders.sort((a, b) => {
+            if (a.status === 'delivered' && b.status !== 'delivered') return -1;
+            if (a.status !== 'delivered' && b.status === 'delivered') return 1;
+            return a.createdAt.seconds - b.createdAt.seconds;
+        });
 
         if (onlineOrders.length === 0) {
             pickupGrid.innerHTML = `<div class="pickup-box-empty"><p>Waiting for online orders...</p></div>`;
@@ -657,25 +641,31 @@ if (loginButton) {
 
         onlineOrders.forEach(order => {
             const orderTimestamp = order.createdAt.toDate().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            
             const isReady = order.status === 'ready';
             const isCooked = order.status === 'cooked';
+            const isOut = order.status === 'out_for_delivery';
+            const isDelivered = order.status === 'delivered';
             
             let typeBadge = order.orderType === 'delivery' ? "🚚 DELIVERY" : "🛍️ PICKUP";
             let typeColor = order.orderType === 'delivery' ? "#e67e22" : "#3498db"; 
             let addressHtml = order.deliveryAddress ? `<div style="font-size:0.85rem; color:#ccc; margin-bottom:8px; padding:5px; background:rgba(255,255,255,0.1); border-radius:4px;"><strong>📍</strong> ${order.deliveryAddress.street} ${order.deliveryAddress.house}, ${order.deliveryAddress.zip}</div>` : "";
 
             let statusHtml = `<span style="background:${typeColor}; color:white; padding:2px 6px; border-radius:4px; font-size:0.75rem;">${typeBadge}</span>`;
+            
+            // --- STATUS BADGES ---
             if (isReady) statusHtml += ' <span style="color:#25D366; font-weight:bold; float:right;">✅ READY</span>';
             else if (isCooked) statusHtml += ' <span style="color:#aaa; font-weight:bold; float:right;">🔵 COMPLETED</span>';
+            else if (isOut) statusHtml += ' <span style="color:#e67e22; font-weight:bold; float:right;">🏍️ DRIVER OUT</span>';
+            else if (isDelivered) statusHtml += ' <span style="color:#FFC107; font-weight:bold; float:right;">⚠️ DRIVER BACK</span>';
 
             let itemsHtml = order.items.map((item, index) => `
                 <li class="waiter-item">
                     <span>${item.quantity}x ${item.name} <strong style="color:var(--gold);">${getDishNumber(item.name)}</strong></span>
-                    ${!isCooked ? `<button class="delete-item-btn" data-order-id="${order.id}" data-item-index="${index}">×</button>` : ''}
+                    ${(!isCooked && !isOut && !isDelivered) ? `<button class="delete-item-btn" data-order-id="${order.id}" data-item-index="${index}">×</button>` : ''}
                 </li>
             `).join('');
 
-            // --- VISUAL FIX: Show Coupon on Card ---
             let couponHtml = "";
             if (order.coupon && order.coupon !== "None") {
                  couponHtml = `<div style="color: #ff4444; font-weight: bold; font-size: 0.9rem; margin-bottom: 5px;">🎟️ Coupon: ${order.coupon}</div>`;
@@ -683,12 +673,36 @@ if (loginButton) {
 
             let notesHtml = order.notes ? `<div style="font-style:italic; color:#888; font-size:0.8rem; margin-bottom:5px;">📝 "${order.notes}"</div>` : '';
 
-            let buttonHtml = isCooked 
-                ? `<button class="clear-pickup-btn" style="background-color: #006400;" onclick="handleClearOrder('${order.id}', 'pickup-archive', this)">💰 Paid & Close</button>`
-                : `<button class="clear-pickup-btn" onclick="handleClearOrder('${order.id}', 'pickup-serve', this)">Mark Ready / Sent</button>`;
+            // --- DYNAMIC BUTTON ---
+            let buttonHtml = "";
+            
+            if (isDelivered) {
+                // DRIVER RETURNED CASH
+                buttonHtml = `<button class="clear-pickup-btn" style="background-color: #FFC107; color:black; font-weight:bold; animation: pulse-yellow 1s infinite;" onclick="handleClearOrder('${order.id}', 'pickup-archive', this)">💰 COLLECT CASH & CLOSE</button>`;
+            } 
+            else if (isCooked) {
+                // Completed Pickup
+                buttonHtml = `<button class="clear-pickup-btn" style="background-color: #006400;" onclick="handleClearOrder('${order.id}', 'pickup-archive', this)">💰 Paid & Close</button>`;
+            } 
+            else if (isOut) {
+                // Driver is driving (No action needed, just wait)
+                buttonHtml = `<button class="clear-pickup-btn" style="background-color: #444; color:#888; cursor:default;" disabled>Driver on route...</button>`;
+            }
+            else {
+                // Default: Mark Ready/Sent
+                buttonHtml = `<button class="clear-pickup-btn" onclick="handleClearOrder('${order.id}', 'pickup-serve', this)">Mark Ready / Sent</button>`;
+            }
+
+            // --- BOX CLASSES ---
+            let boxClass = "pickup-box";
+            if(isReady) boxClass += " ready-order";
+            if(isDelivered) boxClass += " status-cash-check"; // This triggers the CSS animation
+
+            let style = `border-top: 3px solid ${typeColor};`;
+            if (isCooked) style = 'opacity:0.6; border:1px solid #444;';
 
             pickupGrid.innerHTML += `
-                <div class="pickup-box ${isReady ? 'ready-order' : ''}" style="${isCooked ? 'opacity:0.6; border:1px solid #444;' : 'border-top: 3px solid ' + typeColor}">
+                <div class="${boxClass}" style="${style}">
                     <div class="table-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                         <h2 style="font-size:1.1rem; margin:0;">${order.customerName}</h2> 
                         <span class="order-time" style="font-size:0.9rem;">@ ${orderTimestamp}</span>
@@ -735,7 +749,6 @@ if (loginButton) {
     function renderMenu(query) {
         if(!menuListContainer) return;
         menuListContainer.innerHTML = "";
-        // Updated Filter: Checks name OR number
         const filteredItems = MENU_ITEMS.filter((item, index) => {
             const num = (index + 1).toString();
             return item.name.toLowerCase().includes(query) || num.includes(query);
