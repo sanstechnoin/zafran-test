@@ -1,5 +1,4 @@
 // --- 1. CONFIGURATION ---
-// These are your specific project keys
 const firebaseConfig = {
   apiKey: "AIzaSyAVh2kVIuFcrt8Dg88emuEd9CQlqjJxDrA",
   authDomain: "zaffran-delight.firebaseapp.com",
@@ -16,53 +15,108 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 const driverContainer = document.getElementById('driver-orders');
 
-// Global variable to hold the GPS watcher ID
 let watchId = null; 
 
-// --- 3. MAIN LISTENER (Real-Time Updates) ---
-// We listen for 'delivery' orders that are NOT completed yet.
-db.collection("orders")
-    .where("orderType", "==", "delivery")
-    .where("status", "in", ["preparing", "ready", "out_for_delivery"]) 
-    .orderBy("createdAt", "asc")
-    .onSnapshot((snapshot) => {
-        driverContainer.innerHTML = "";
-        
-        if (snapshot.empty) {
-            driverContainer.innerHTML = `
-                <div class="empty-state">
-                    <span class="material-icons" style="font-size: 64px; opacity:0.3;">check_circle</span>
-                    <p>No active deliveries.</p>
-                </div>`;
-            return;
-        }
+// --- 3. LOGIN & PIN LOGIC ---
+document.addEventListener("DOMContentLoaded", () => {
+    
+    // A. Anonymous Login (REQUIRED to see database)
+    firebase.auth().signInAnonymously().catch(e => console.error("Auth Error:", e));
 
-        const now = new Date();
+    // B. Check if already logged in via PIN
+    if (sessionStorage.getItem('driver_authorized') === 'true') {
+        showDriverApp();
+    }
 
-        snapshot.forEach((doc) => {
-            const order = doc.data();
-            renderDriverCard(doc.id, order, now);
-        });
-    }, (error) => {
-        console.error("Firebase Error:", error);
-        if(error.message.includes("index")) {
-            driverContainer.innerHTML = `<p style="color:red; text-align:center; padding:20px; border:1px solid red;">⚠️ SYSTEM ALERT: Index Missing.<br>Open Console (F12) & click the Firebase link to fix.</p>`;
-        }
+    // C. Handle PIN Submit
+    document.getElementById('pin-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const inputPin = document.getElementById('driver-pin').value.trim();
+        const btn = document.querySelector('#pin-form button');
+        const err = document.getElementById('login-error');
+
+        btn.innerText = "...";
+        btn.disabled = true;
+
+        // Fetch PIN from Admin Settings
+        db.collection('settings').doc('driver_auth').get()
+            .then((doc) => {
+                if (doc.exists && doc.data().pin === inputPin) {
+                    sessionStorage.setItem('driver_authorized', 'true');
+                    showDriverApp();
+                } else {
+                    err.textContent = "Falscher PIN!";
+                    btn.innerText = "ENTER";
+                    btn.disabled = false;
+                    document.getElementById('driver-pin').value = "";
+                }
+            })
+            .catch((error) => {
+                console.error("Error checking PIN:", error);
+                err.textContent = "Verbindungsfehler.";
+                btn.innerText = "ENTER";
+                btn.disabled = false;
+            });
     });
+});
+
+function showDriverApp() {
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('driver-app').style.display = 'block';
+    initOrderListener(); // Start listening ONLY after PIN is correct
+}
+
+window.logout = function() {
+    sessionStorage.removeItem('driver_authorized');
+    location.reload();
+};
 
 
-// --- 4. RENDER CARD FUNCTION ---
+// --- 4. MAIN LISTENER (Real-Time Updates) ---
+function initOrderListener() {
+    // IMPORTANT: added "cooked" to the list so Waiter actions don't hide the order
+    db.collection("orders")
+        .where("orderType", "==", "delivery")
+        .where("status", "in", ["preparing", "ready", "cooked", "out_for_delivery"]) 
+        .orderBy("createdAt", "asc")
+        .onSnapshot((snapshot) => {
+            driverContainer.innerHTML = "";
+            
+            if (snapshot.empty) {
+                driverContainer.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-icons" style="font-size: 64px; opacity:0.3;">check_circle</span>
+                        <p>Keine offenen Lieferungen.</p>
+                    </div>`;
+                return;
+            }
+
+            const now = new Date();
+
+            snapshot.forEach((doc) => {
+                const order = doc.data();
+                renderDriverCard(doc.id, order, now);
+            });
+        }, (error) => {
+            console.error("Firebase Error:", error);
+            if(error.code === 'permission-denied') {
+                alert("Fehler: Zugriff verweigert. Bitte Seite neu laden.");
+            }
+        });
+}
+
+
+// --- 5. RENDER CARD FUNCTION ---
 function renderDriverCard(id, order, now) {
-    // A. Address Setup
     const addr = order.deliveryAddress || {};
     const fullAddress = `${addr.street} ${addr.house}, ${addr.zip} Euskirchen`;
     const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
     
-    // B. Generate the Unique Tracking Link
+    // Tracking Link
     const domain = window.location.origin; 
     const trackerUrl = `${domain}/tracker.html?id=${id}`;
 
-    // C. Overdue Logic (Check if current time > delivery time)
+    // Overdue Logic
     let isOverdue = false;
     const timeSlot = order.timeSlot || "";
     if (timeSlot.includes(':')) {
@@ -72,18 +126,17 @@ function renderDriverCard(id, order, now) {
         if (now > deadline) isOverdue = true;
     }
 
-    // D. Status & Button States
+    // Status Logic
     let statusClass = 'status-preparing';
-    let isDisabled = true; // Buttons disabled by default (while cooking)
+    let isDisabled = true; 
 
-    // If Kitchen marked "Ready" OR Driver already started
-    if (order.status === 'ready' || order.status === 'out_for_delivery') {
+    // If Kitchen (ready), Waiter (cooked), or Driver (out) -> ENABLE
+    if (order.status === 'ready' || order.status === 'cooked' || order.status === 'out_for_delivery') {
         statusClass = 'status-ready';
-        isDisabled = false; // Enable buttons
+        isDisabled = false; 
     }
     if (isOverdue) statusClass = 'status-overdue';
 
-    // E. Build HTML
     const html = `
     <div class="order-card ${statusClass}" id="card-${id}">
         
@@ -100,7 +153,6 @@ function renderDriverCard(id, order, now) {
         <div id="in-app-map-${id}" class="in-app-map-container"></div>
 
         <div style="background:#222; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #333;">
-            
             <button onclick="startInAppNav('${id}', '${fullAddress}')" class="btn-action" style="width:100%; background:#4285F4; margin-bottom:15px;">
                 <span class="material-icons" style="margin-right:8px;">near_me</span> START GPS & TRACKING
             </button>
@@ -127,10 +179,10 @@ function renderDriverCard(id, order, now) {
             </div>
         </div>
 
-        <div class="payment-info">💰 To Collect: ${order.total.toFixed(2)} €</div>
+        <div class="payment-info">💰 Zu Kassieren: ${order.total.toFixed(2)} €</div>
 
         <button onclick="completeDelivery('${id}')" class="complete-btn" ${isDisabled ? 'disabled style="opacity:0.5"' : ''}>
-            DELIVERED
+            DELIVERED / ABGESCHLOSSEN
         </button>
     </div>
     `;
@@ -139,17 +191,15 @@ function renderDriverCard(id, order, now) {
 }
 
 
-// --- 5. NAVIGATION & TRACKING LOGIC ---
+// --- 6. NAVIGATION ---
 window.startInAppNav = function(orderId, addressText) {
     const mapDiv = document.getElementById(`in-app-map-${orderId}`);
     
-    // Accordion Logic: Close if open
     if (mapDiv.classList.contains('active')) {
         mapDiv.classList.remove('active');
         return; 
     }
     
-    // Close other maps
     document.querySelectorAll('.in-app-map-container').forEach(el => el.classList.remove('active'));
     mapDiv.classList.add('active');
 
@@ -159,11 +209,9 @@ window.startInAppNav = function(orderId, addressText) {
         const driverLat = pos.coords.latitude;
         const driverLng = pos.coords.longitude;
 
-        // Initialize Leaflet Map
         const map = L.map(mapDiv).setView([driverLat, driverLng], 15);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
-        // Geocode Customer Address
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressText)}`)
             .then(res => res.json())
             .then(data => {
@@ -171,37 +219,32 @@ window.startInAppNav = function(orderId, addressText) {
                     const custLat = data[0].lat;
                     const custLon = data[0].lon;
 
-                    // Draw Route
                     L.Routing.control({
                         waypoints: [
                             L.latLng(driverLat, driverLng),
                             L.latLng(custLat, custLon)
                         ],
-                        createMarker: function() { return null; }, // Hide default markers
+                        createMarker: function() { return null; },
                         showAlternatives: false,
                         lineOptions: { styles: [{color: '#4285F4', opacity: 0.8, weight: 6}] }
                     }).addTo(map);
                     
-                    // Custom Markers
                     L.marker([driverLat, driverLng]).addTo(map).bindPopup("You").openPopup();
                     L.marker([custLat, custLon]).addTo(map).bindPopup("Customer");
 
-                    // 🚀 START BROADCASTING LOCATION
                     startLiveTracking(orderId);
 
                 } else {
-                    alert("Address not found on internal map. Use Google Maps button.");
+                    alert("Address not found on internal map. Use Google Maps.");
                 }
             });
 
     }, (err) => alert("GPS Error: " + err.message));
 }
 
-// Helper: Send Location to Firebase
 function startLiveTracking(orderId) {
-    if(watchId) return; // Already tracking
+    if(watchId) return; 
 
-    // Update status to 'out_for_delivery'
     db.collection("orders").doc(orderId).update({ status: 'out_for_delivery' });
 
     alert("GPS Active! 🛰️\nLocation is being shared.");
@@ -218,39 +261,31 @@ function startLiveTracking(orderId) {
 }
 
 
-// --- 6. NATIVE SHARE (For WhatsApp Business Landline) ---
+// --- 7. SHARE & COMPLETE ---
 window.nativeShare = function(phone, url) {
-    
-    // A. Use Native Share (Works on Mobile)
-    // This allows the driver to pick "WhatsApp Business" from the list
     if (navigator.share) {
         navigator.share({
             title: 'Zafran Delivery',
-            text: 'Your order is on the way! Track here:',
+            text: 'Ihre Bestellung ist unterwegs! Live Tracking:',
             url: url
         }).catch((err) => console.log('Share canceled', err));
     } 
-    
-    // B. Fallback for Desktop (Direct WhatsApp Link)
     else {
         const cleanPhone = phone.replace(/[^0-9]/g, '');
-        const text = `Hi! 🚗 Your Zafran delivery is on the way. Track live here: ${url}`;
+        const text = `Hi! 🚗 Ihre Zafran Bestellung ist unterwegs. Live Tracking: ${url}`;
         window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
     }
 }
 
-
-// --- 7. COMPLETE DELIVERY ---
 window.completeDelivery = function(orderId) {
     if(navigator.vibrate) navigator.vibrate(50);
 
-    if(!confirm("💰 Confirm: Food delivered & Money collected?")) return;
+    if(!confirm("💰 Bestätigen: Essen geliefert & Geld kassiert?")) return;
 
     db.collection("orders").doc(orderId).update({
         status: "completed",
         deliveredAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
-        // Stop tracking to save battery
         if(watchId !== null) {
             navigator.geolocation.clearWatch(watchId);
             watchId = null;
