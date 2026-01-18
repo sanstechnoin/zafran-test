@@ -189,11 +189,32 @@
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const input = document.getElementById('admin-password').value;
+            const loginError = document.getElementById('login-error');
+            const loginBtn = document.querySelector('#login-form button');
+
             if(input === ADMIN_PASSWORD) {
-                sessionStorage.setItem('zafran_res_admin_logged_in', 'true');
-                showAdminContent();
+                
+                // Real Firebase Login
+                loginBtn.innerText = "Verbinden...";
+                loginBtn.disabled = true;
+
+                const hiddenEmail = "webmaster@zafraneuskirchen.de"; 
+                const hiddenPass  = "!Zafran2025"; 
+
+                firebase.auth().signInWithEmailAndPassword(hiddenEmail, hiddenPass)
+                .then(() => {
+                    sessionStorage.setItem('zafran_res_admin_logged_in', 'true');
+                    showAdminContent();
+                })
+                .catch((error) => {
+                    console.error("Auth Error:", error);
+                    loginError.textContent = "Verbindungsfehler zur Datenbank";
+                    loginBtn.innerText = "Einloggen";
+                    loginBtn.disabled = false;
+                });
+
             } else {
-                document.getElementById('login-error').textContent = "Falsches Passwort!";
+                loginError.textContent = "Falsches Passwort!";
             }
         });
         
