@@ -21,7 +21,7 @@
             background-color: var(--bg-dark); 
             color: var(--text-main); 
             padding: 20px; 
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex; flex-direction: column; min-height: 100vh; margin: 0;
         }
         
@@ -46,6 +46,7 @@
         .filter-bar input, .filter-bar select {
             padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: white;
         }
+        
         .btn-refresh {
             padding: 8px 15px; background: var(--gold); color: black; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: auto;
         }
@@ -146,9 +147,9 @@
     </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script> 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script> 
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
 <script>
     // --- 1. CONFIG ---
@@ -163,6 +164,7 @@
       appId: "1:1022960860126:web:1e06693dea1d0247a0bb4f"
     };
     
+    // Initialize (Compat style)
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
@@ -170,7 +172,7 @@
 
     // --- 2. LOGIN & INIT ---
     document.addEventListener("DOMContentLoaded", () => {
-        // Init Date Picker with TODAY (Local Time)
+        // Init Date Picker with TODAY
         const now = new Date();
         const yyyy = now.getFullYear();
         const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -180,16 +182,16 @@
         // Monitor Auth State
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                // If logged in (Anonymously), show content
+                // Logged in!
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
                 
-                // Load data if empty
+                // If the table is empty, load data
                 if(document.getElementById('res-body').innerText.includes("Lade")) {
                     loadReservations();
                 }
             } else {
-                // Show Login Screen
+                // Logged out
                 document.getElementById('login-overlay').style.display = 'flex';
                 document.getElementById('admin-content').style.display = 'none';
             }
@@ -206,13 +208,28 @@
                 btn.innerText = "Verbinde...";
                 btn.disabled = true;
 
-                // USE ANONYMOUS LOGIN (Same as Driver App)
-                firebase.auth().signInAnonymously().catch((error) => {
+                // Same Credentials as Admin Coupons
+                const email = "webmaster@zafraneuskirchen.de"; 
+                const secret = "!Zafran2025"; 
+
+                // 1. Try to Login
+                firebase.auth().signInWithEmailAndPassword(email, secret)
+                .catch((error) => {
+                    // 2. If User Not Found, CREATE the user automatically
+                    if (error.code === 'auth/user-not-found') {
+                        console.log("User missing. Creating now...");
+                        return firebase.auth().createUserWithEmailAndPassword(email, secret);
+                    }
+                    throw error; // Throw other errors
+                })
+                .catch((error) => {
+                    // 3. Handle Actual Failures
                     console.error("Login Error:", error);
-                    err.textContent = "Datenbank-Fehler: " + error.message;
+                    err.innerHTML = `Fehler: ${error.message}<br><small>Code: ${error.code}</small>`;
                     btn.innerText = "Einloggen";
                     btn.disabled = false;
                 });
+
             } else {
                 err.textContent = "Falsches Passwort!";
             }
