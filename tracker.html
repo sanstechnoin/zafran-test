@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Track Order - Zafran</title>
+    <title>Bestellung verfolgen - Zafran</title>
     <link rel="icon" href="favlogo.png" type="image/png">
     
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -18,6 +18,7 @@
             --card-bg: #1e1e1e;
             --gold: #D4AF37;
             --green: #4CAF50;
+            --red: #f44336;
             --text-main: #ffffff;
             --text-sub: #aaaaaa;
         }
@@ -44,7 +45,7 @@
         }
         body.map-active #map { opacity: 1; }
 
-        /* BOTTOM SHEET (The Card) */
+        /* BOTTOM SHEET */
         .tracker-overlay {
             position: absolute; 
             bottom: 0; left: 0; right: 0;
@@ -59,7 +60,7 @@
             z-index: 1000;
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             border-top: 1px solid rgba(255,255,255,0.1);
-            max-height: 85vh; /* Allow scrolling if receipt is long */
+            max-height: 85vh; 
             overflow-y: auto;
         }
 
@@ -72,6 +73,7 @@
             transition: all 0.3s;
         }
         .eta-badge.live { background: var(--green); color: white; animation: pulse-green 2s infinite; }
+        .eta-badge.cancelled { background: var(--red); color: white; }
 
         /* PROGRESS BAR */
         .progress-container { display: flex; justify-content: space-between; position: relative; margin-bottom: 30px; padding: 0 10px; }
@@ -92,6 +94,7 @@
         .step { position: relative; z-index: 1; text-align: center; width: 25%; opacity: 0.4; transition: all 0.4s; }
         .step.active { opacity: 1; transform: scale(1.1); }
         .step.completed { opacity: 1; }
+        .step.cancelled { opacity: 1; color: var(--red); }
         
         .step-icon {
             width: 32px; height: 32px; background: #222; border-radius: 50%;
@@ -101,6 +104,10 @@
         
         .step.active .step-icon { background: var(--gold); border-color: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
         .step.completed .step-icon { background: var(--gold); border-color: var(--gold); color: #000; }
+        
+        /* CANCELLED ICON STYLE */
+        .step.cancelled .step-icon { background: var(--red); border-color: var(--red); color: #fff; box-shadow: 0 0 15px rgba(244, 67, 54, 0.4); }
+
         .step-label { font-size: 0.75rem; font-weight: 600; }
 
         /* STATUS TEXT */
@@ -108,7 +115,7 @@
         .status-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; color: #fff; letter-spacing: -0.5px; }
         .status-sub { font-size: 0.95rem; color: #aaa; line-height: 1.4; }
 
-        /* E-RECEIPT (Simplified: No Total) */
+        /* E-RECEIPT */
         .receipt-container {
             background: rgba(0,0,0,0.3);
             border-radius: 12px;
@@ -125,9 +132,7 @@
             display: flex; justify-content: space-between; 
             margin-bottom: 8px; font-size: 0.95rem; color: #eee; 
         }
-        .receipt-item span:last-child {
-            color: #aaa; /* Price color slightly dimmer */
-        }
+        .receipt-item span:last-child { color: #aaa; }
 
         /* DRIVER CARD */
         .driver-info {
@@ -167,7 +172,6 @@
             animation: spin 1s linear infinite; margin-bottom: 20px;
         }
 
-        /* ANIMATIONS */
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); } 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); } }
@@ -178,7 +182,7 @@
 
     <div class="loader-screen" id="loader">
         <div class="loader-spinner"></div>
-        <div style="color: #888; font-size: 0.9rem; font-weight: 600;" id="loader-text">Connecting...</div>
+        <div style="color: #888; font-size: 0.9rem; font-weight: 600;" id="loader-text">Verbinde...</div>
     </div>
 
     <div id="map"></div>
@@ -196,10 +200,10 @@
 
         <div class="track-header">
             <div>
-                <div class="order-id" id="display-id">WAITING...</div>
+                <div class="order-id" id="display-id">WARTEN...</div>
                 <div style="font-size: 0.8rem; color: #666; margin-top:2px;" id="order-time"></div>
             </div>
-            <div class="eta-badge" id="eta-badge">Syncing</div>
+            <div class="eta-badge" id="eta-badge">Sync</div>
         </div>
 
         <div class="progress-container">
@@ -208,40 +212,40 @@
 
             <div class="step" id="step-new">
                 <div class="step-icon"><span class="material-icons" style="font-size:16px">receipt</span></div>
-                <div class="step-label">Sent</div>
+                <div class="step-label">Neu</div>
             </div>
             <div class="step" id="step-preparing">
                 <div class="step-icon"><span class="material-icons" style="font-size:16px">soup_kitchen</span></div>
-                <div class="step-label">Cooking</div>
+                <div class="step-label">Küche</div>
             </div>
             <div class="step" id="step-delivery">
                 <div class="step-icon"><span class="material-icons" style="font-size:16px">directions_car</span></div>
-                <div class="step-label">On Way</div>
+                <div class="step-label">Fahrer</div>
             </div>
             <div class="step" id="step-completed">
                 <div class="step-icon"><span class="material-icons" style="font-size:16px">check_circle</span></div>
-                <div class="step-label">Enjoy</div>
+                <div class="step-label">Fertig</div>
             </div>
         </div>
 
         <div class="status-message">
-            <div class="status-title" id="status-title">Track your Order</div>
-            <div class="status-sub" id="status-sub">Enter your PIN above or use your link.</div>
+            <div class="status-title" id="status-title">Bestellung verfolgen</div>
+            <div class="status-sub" id="status-sub">Geben Sie oben Ihre PIN ein.</div>
         </div>
 
         <div id="receipt-area" class="receipt-container" style="display:none;">
             <div class="receipt-title">Bestellübersicht</div>
             <div id="receipt-items-list">
                 </div>
-            </div>
+        </div>
 
         <div class="driver-info" id="driver-card">
             <div class="driver-avatar">
                 <span class="material-icons">person</span>
             </div>
             <div class="driver-details">
-                <h4>Your Driver</h4>
-                <p>Is arriving with your food</p>
+                <h4>Ihr Fahrer</h4>
+                <p>Ist auf dem Weg zu Ihnen</p>
             </div>
             <a href="tel:+491623757839" class="call-btn">
                 <span class="material-icons">phone</span>
@@ -299,7 +303,7 @@
             if (!input) return;
 
             document.getElementById('loader').style.display = 'flex';
-            document.getElementById('loader-text').innerText = 'Searching...';
+            document.getElementById('loader-text').innerText = 'Suche...';
 
             // Try "orders" first (Active)
             searchCollection("orders", input, (foundId, data) => {
@@ -313,7 +317,7 @@
                         } else {
                             // Not found in either
                             document.getElementById('loader').style.display = 'none';
-                            setStatusMessage("Order Not Found", "Please check your PIN or ID.");
+                            setStatusMessage("Nicht gefunden", "Bitte prüfen Sie PIN oder ID.");
                         }
                     });
                 }
@@ -378,7 +382,7 @@
             document.getElementById('loader').style.display = 'none';
 
             if (!doc.exists) {
-                setStatusMessage("Order Not Found", "This order may have been removed.");
+                setStatusMessage("Nicht gefunden", "Bestellung existiert nicht mehr.");
                 return;
             }
 
@@ -386,7 +390,7 @@
             updateUI(data, id);
 
             // MAP LOGIC
-            // If archived/completed, we don't show the live car
+            // If active and out for delivery
             if (isLive && data.status === 'out_for_delivery' && data.driverLocation) {
                 const lat = data.driverLocation.lat;
                 const lng = data.driverLocation.lng;
@@ -410,7 +414,7 @@
             
             if(data.createdAt && data.createdAt.toDate) {
                 const time = data.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                document.getElementById('order-time').innerText = `Time: ${time}`;
+                document.getElementById('order-time').innerText = `Zeit: ${time}`;
             }
 
             // --- BUILD RECEIPT (ITEMS ONLY - NO TOTAL) ---
@@ -433,51 +437,78 @@
                 receiptArea.style.display = 'none';
             }
 
-            // --- PROGRESS BAR ---
-            const status = data.status; 
+            // --- PROGRESS BAR & STATUS ---
+            const status = data.status; // 'new', 'preparing', 'out_for_delivery', 'completed', 'cancelled'
             let progress = 0;
-            let title = "Received";
-            let sub = "We received your order.";
-            let badgeText = "Received";
+            let title = "Empfangen";
+            let sub = "Bestellung ist eingegangen.";
+            let badgeText = "Empfangen";
             let badgeClass = "";
 
+            // Reset Steps
             ['new', 'preparing', 'delivery', 'completed'].forEach(step => {
-                document.getElementById(`step-${step}`).className = 'step';
+                const el = document.getElementById(`step-${step}`);
+                el.className = 'step';
+                // Remove cancelled icons if they existed
+                el.querySelector('.step-icon').innerHTML = getStepIcon(step); 
             });
 
-            if (status === 'new') {
-                progress = 12;
-                document.getElementById('step-new').classList.add('active');
-            } 
-            else if (status === 'preparing' || status === 'ready') {
-                progress = status === 'ready' ? 62 : 37;
-                title = status === 'ready' ? "Packing" : "Cooking";
-                sub = status === 'ready' ? "Your food is ready & hot." : "Our chef is preparing your meal.";
-                badgeText = status === 'ready' ? "Packing" : "Cooking";
-                document.getElementById('step-new').classList.add('completed');
-                document.getElementById('step-preparing').classList.add('active');
-            }
-            else if (status === 'out_for_delivery') {
-                progress = 87;
-                title = "Driver on the Way!";
-                sub = "Track the car on the map.";
-                badgeText = "LIVE";
-                badgeClass = "live";
-                document.getElementById('step-new').classList.add('completed');
-                document.getElementById('step-preparing').classList.add('completed');
-                document.getElementById('step-delivery').classList.add('active');
-                document.getElementById('driver-card').style.display = 'flex';
-            }
-            else if (status === 'completed' || status === 'archived') {
+            if (status === 'cancelled') {
+                // CANCELLED STATE
                 progress = 100;
-                title = "Delivered";
-                sub = "Enjoy your meal! 🍕";
-                badgeText = "DONE";
-                document.getElementById('eta-badge').style.background = '#4CAF50';
-                document.getElementById('eta-badge').style.color = '#fff';
-                document.querySelectorAll('.step').forEach(el => el.classList.add('completed'));
-                document.getElementById('step-completed').classList.add('active');
+                title = "Storniert";
+                sub = "Diese Bestellung wurde abgelehnt/storniert.\nBitte rufen Sie uns an: +49 2251 1290950";
+                badgeText = "Storniert";
+                badgeClass = "cancelled";
+                
+                // Show all steps as red/cancelled to indicate failure
+                document.querySelectorAll('.step').forEach(el => el.classList.add('cancelled'));
+                
+                // Change icons to 'block' or 'close'
+                document.querySelectorAll('.step-icon span').forEach(icon => icon.innerText = 'block');
+                
+                document.getElementById('progress-fill').style.background = '#f44336'; // Red Line
                 document.getElementById('driver-card').style.display = 'none';
+                document.body.classList.remove('map-active');
+            } 
+            else {
+                // NORMAL STATES
+                document.getElementById('progress-fill').style.background = '#D4AF37'; // Gold Line
+
+                if (status === 'new') {
+                    progress = 12;
+                    document.getElementById('step-new').classList.add('active');
+                } 
+                else if (status === 'preparing' || status === 'ready') {
+                    progress = status === 'ready' ? 62 : 37;
+                    title = status === 'ready' ? "Verpacken" : "Zubereitung";
+                    sub = status === 'ready' ? "Ihre Bestellung wird verpackt." : "Frisch für Sie zubereitet.";
+                    badgeText = status === 'ready' ? "Verpacken" : "Küche";
+                    document.getElementById('step-new').classList.add('completed');
+                    document.getElementById('step-preparing').classList.add('active');
+                }
+                else if (status === 'out_for_delivery') {
+                    progress = 87;
+                    title = "Fahrer unterwegs";
+                    sub = "Verfolgen Sie den Fahrer auf der Karte.";
+                    badgeText = "LIVE";
+                    badgeClass = "live";
+                    document.getElementById('step-new').classList.add('completed');
+                    document.getElementById('step-preparing').classList.add('completed');
+                    document.getElementById('step-delivery').classList.add('active');
+                    document.getElementById('driver-card').style.display = 'flex';
+                }
+                else if (status === 'completed' || status === 'archived') {
+                    progress = 100;
+                    title = "Zugestellt";
+                    sub = "Guten Appetit! 🍕";
+                    badgeText = "Fertig";
+                    document.getElementById('eta-badge').style.background = '#4CAF50';
+                    document.getElementById('eta-badge').style.color = '#fff';
+                    document.querySelectorAll('.step').forEach(el => el.classList.add('completed'));
+                    document.getElementById('step-completed').classList.add('active');
+                    document.getElementById('driver-card').style.display = 'none';
+                }
             }
 
             document.getElementById('progress-fill').style.width = `${progress}%`;
@@ -486,6 +517,14 @@
             const badge = document.getElementById('eta-badge');
             badge.innerText = badgeText;
             badge.className = `eta-badge ${badgeClass}`;
+        }
+
+        // Helper to reset icons back to original
+        function getStepIcon(step) {
+            if(step === 'new') return '<span class="material-icons" style="font-size:16px">receipt</span>';
+            if(step === 'preparing') return '<span class="material-icons" style="font-size:16px">soup_kitchen</span>';
+            if(step === 'delivery') return '<span class="material-icons" style="font-size:16px">directions_car</span>';
+            if(step === 'completed') return '<span class="material-icons" style="font-size:16px">check_circle</span>';
         }
     </script>
 
