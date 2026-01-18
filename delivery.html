@@ -1890,22 +1890,14 @@ select#pickup-time:focus {
                 <br><small style="color:#888;">(Andernfalls rufen wir Sie nur im Notfall an.)</small>
             </label>
         </div>
-    </div>
-    <div class="consent-box">
-        <input type="checkbox" id="whatsapp-consent" checked>
-        <label for="whatsapp-consent">
-            Ich stimme zu, dass der Fahrer mich per <strong>WhatsApp</strong> über den Lieferstatus informieren darf.
-            <br><small style="color:#888;">(Andernfalls rufen wir Sie nur im Notfall an.)</small>
-        </label>
-    </div>
-
-    <div class="consent-box">
+    
+    <div style="display:flex; align-items:start; gap:10px;">
         <input type="checkbox" id="privacy-consent" name="privacy-consent" required>
-        <label for="privacy-consent">
+        <label for="privacy-consent" style="font-size:0.9rem; color:#ccc; line-height:1.4;">
             Ich habe die <a href="privacy.html" target="_blank" style="color:#D4AF37; text-decoration:underline;">Datenschutzerklärung</a> gelesen und stimme zu.
         </label>
     </div>
-
+    </div>
     <div id="checkout-buttons-wrapper">
         <button type="button" id="firebase-btn" class="checkout-kitchen" disabled>
             Kostenpflichtig Bestellen (Barzahlung)
