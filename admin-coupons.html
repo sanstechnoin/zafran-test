@@ -413,7 +413,7 @@
     const db = firebase.firestore();
 
     // --- AUTH & LOAD ---
-    const ADMIN_PASSWORD = "zafran2025"; 
+    const ADMIN_PASSWORD = "zafran"; 
 
     document.addEventListener("DOMContentLoaded", () => {
         if(sessionStorage.getItem('zafran_admin_logged_in') === 'true') {
@@ -421,15 +421,38 @@
         }
 
         document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            if(document.getElementById('admin-password').value === ADMIN_PASSWORD) {
+        e.preventDefault();
+        const inputPass = document.getElementById('admin-password').value;
+        const loginError = document.getElementById('login-error');
+        const loginBtn = document.querySelector('#login-form button');
+
+        // 1. Check visual PIN
+        if(inputPass === ADMIN_PASSWORD) {
+            
+            // 2. Perform Real Firebase Login
+            loginBtn.innerText = "Authenticating...";
+            loginBtn.disabled = true;
+
+            const hiddenEmail = "webmaster@zafraneuskirchen.de"; 
+            const hiddenPass  = "!Zafran2025"; 
+
+            firebase.auth().signInWithEmailAndPassword(hiddenEmail, hiddenPass)
+            .then(() => {
                 sessionStorage.setItem('zafran_admin_logged_in', 'true');
                 initAdmin();
-            } else {
-                document.getElementById('login-error').textContent = "Incorrect Password";
-            }
-        });
+            })
+            .catch((error) => {
+                console.error("Login Error:", error);
+                loginError.textContent = "Database Connection Failed";
+                loginBtn.innerText = "Login";
+                loginBtn.disabled = false;
+            });
+
+        } else {
+            loginError.textContent = "Incorrect Password";
+        }
     });
+});
 
     function initAdmin() {
         document.getElementById('login-overlay').style.display = 'none';
