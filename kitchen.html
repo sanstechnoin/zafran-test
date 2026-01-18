@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaffran Kitchen Display</title>
+    <link rel="stylesheet" href="style.css?v=33"> 
+    <link rel="icon" type="image/png" href="favlogo.png">
+    <style>
+        /* --- KITCHEN VARIABLES --- */
+        :root {
+            --gold: #D4AF37;
+            /* Max width to prevent edge bleeding on large screens */
+            --content-width: 1400px; 
+        }
+
+        /* --- 1. WAITER CALL ALERT (Red Box) --- */
+        #waiter-call-overlay .kitchen-popup-box {
+            border: 4px solid #ff4444;
+            background-color: #2a0a0a; /* Dark Red Background */
+            box-shadow: 0 0 30px #ff4444;
+        }
+        #waiter-call-overlay h3 { color: #ff4444; font-size: 2rem; margin-bottom: 10px; }
+        #waiter-call-table { font-size: 3.5rem; color: white; margin: 20px 0; font-weight: bold; }
+        #dismiss-waiter-btn {
+            background-color: #ff4444; 
+            color: white; 
+            font-size: 1.5rem; 
+            padding: 15px; 
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #dismiss-waiter-btn:hover { background-color: #cc0000; }
+
+        /* --- 2. NEW ORDER NOTIFICATION (Massive Font Update) --- */
+        #new-order-popup-overlay .kitchen-popup-box {
+            width: 85% !important;
+            max-width: 800px !important;
+            padding: 40px !important;
+            border: 3px solid #D4AF37; 
+        }
+        #new-order-popup-overlay h3 { 
+            font-size: 4rem !important; 
+            margin-bottom: 30px !important;
+        }
+        #popup-order-details { text-align: center; }
+        #popup-order-details h2, 
+        #popup-order-details h3, 
+        #popup-order-details h4 {
+            font-size: 4rem !important; 
+            color: #D4AF37 !important; 
+            margin: 20px 0 30px 0 !important;
+            text-decoration: underline;
+        }
+        #popup-order-details ul li,
+        #popup-order-details div, 
+        #popup-order-details p {
+            font-size: 2.5rem !important;
+            line-height: 1.4 !important;
+            margin-bottom: 10px !important;
+        }
+        #accept-order-btn {
+            font-size: 2.5rem !important;
+            padding: 30px !important;
+            margin-top: 40px !important;
+            width: 100% !important;
+            font-weight: bold;
+            background-color: #D4AF37;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        #accept-order-btn:hover { background-color: white; transform: scale(1.02); }
+
+        /* --- FIXED DASHBOARD LAYOUT --- */
+        .table-box .table-header h2,
+        .pickup-box .table-header h2 {
+            font-size: 1.8rem !important; 
+            color: var(--gold) !important;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px !important;
+            margin-bottom: 10px !important;
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .waiter-item, .order-list li, .pickup-box ul li {
+            font-size: 1.35rem !important; 
+            line-height: 1.3 !important;
+            font-weight: 600 !important;
+            margin-bottom: 8px !important;
+            display: flex !important;
+            justify-content: space-between; 
+            align-items: flex-start;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            padding-bottom: 4px;
+        }
+        .order-list li strong, .pickup-box ul li strong {
+            font-size: 1.5rem !important; 
+            color: var(--gold) !important;
+            margin-left: 8px; 
+            white-space: nowrap; 
+        }
+        .order-list, .pickup-box ul { padding-left: 0 !important; list-style: none !important; }
+        .order-group h4, .pickup-box .order-time {
+            font-size: 1.1rem !important;
+            color: #ccc !important;
+            margin-bottom: 10px;
+        }
+        .btn-serve, .clear-pickup-btn, .clear-table-btn {
+            font-size: 1.3rem !important;
+            padding: 10px !important;
+            width: 100% !important;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .table-box, .pickup-box { padding: 10px 15px !important; }
+
+        /* --- LAYOUT UTILITY CLASS (Keeps content centered/contained) --- */
+        .layout-contain {
+            width: 100%;
+            max-width: var(--content-width);
+            margin: 0 auto;
+            padding: 0 20px; /* Safe padding from edge */
+            box-sizing: border-box;
+        }
+        /* Header specific flex layout */
+        header .layout-contain {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+        }
+        /* Footer specific flex layout */
+        footer .layout-contain {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- MASTER CLEAR BUTTON --- */
+        #master-clear-btn {
+            background-color: #ff9800; /* Orange */
+            color: black;
+            font-weight: bold;
+            font-size: 1.2rem;
+            padding: 10px 25px;
+            border: 2px solid #e65100;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+            margin-left: 20px;
+        }
+        #master-clear-btn:hover { background-color: #ffb74d; transform: scale(1.05); }
+
+    </style>
+</head>
+<body class="kitchen-body">
+
+    <header class="kitchen-header">
+        <div class="layout-contain">
+            <div class="header-logo">
+                <img src="logo.png" alt="Zaffran Logo">
+                <h1>Kitchen Display System</h1>
+                <span id="connection-icon">...</span>
+            </div>
+            
+            <button id="master-clear-btn">⚠️ MASTER CLEAR</button>
+        </div>
+    </header>
+
+    <main class="kitchen-main">
+        <div class="layout-contain" style="height: 100%; display: flex; flex-direction: column;">
+            <div id="kds-content-wrapper" style="flex:1;">
+                
+                <div class="kds-section-header">
+                    <h2>Dine-In Orders</h2>
+                </div>
+                <div class="table-grid" id="dine-in-grid">
+                </div>
+
+                <div class="kds-section-header">
+                    <h2>Online Orders</h2>
+                </div>
+                <div class="pickup-grid" id="pickup-grid">
+                    <div class="pickup-box-empty">
+                        <p>Waiting for online orders...</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-credit-footer" id="footer-bar">
+        <div class="layout-contain">
+            <div class="footer-line-one" style="width:100%;">
+                <p class="footer-developer">
+                    Created & Developed by <a href="https://santechnologies.de/" target="_blank" rel="noopener noreferrer" style="color: #888; text-decoration: none; font-weight: bold;">SAN Technologies</a> +49 162 3757839
+                </p>
+                <p class="footer-copyright">
+                    &copy; Zaffran Delight, Euskirchen 2025
+                </p>
+            </div>
+        </div>
+   </footer>   
+
+    <div id="new-order-popup-overlay" class="kitchen-popup-overlay hidden">
+        <div class="kitchen-popup-box">
+            <h3>🔔 New Order! 🔔</h3>
+            <div id="popup-order-details"></div>
+            <button id="accept-order-btn">Accept Order</button>
+        </div>
+    </div>
+
+    <div id="waiter-call-overlay" class="kitchen-popup-overlay hidden">
+        <div class="kitchen-popup-box">
+            <h3>⚠️ SERVICE REQUEST ⚠️</h3>
+            <div id="waiter-call-table">TABLE ?</div>
+            <p style="color: #ccc; margin-bottom: 20px;">Customer is calling for assistance.</p>
+            <button id="dismiss-waiter-btn">DISMISS</button>
+        </div>
+    </div>
+    
+    <div id="kitchen-login-overlay" class="kitchen-popup-overlay">
+        <div class="kitchen-popup-box">
+            <h3>KDS Login</h3>
+            <p>Please enter the kitchen password.</p>
+            <input type="password" id="kitchen-password" placeholder="Password">
+            <p id="login-error" style="color: red; display: none;">Invalid Password</p>
+            <button id="login-button">Login</button>
+        </div>
+    </div>
+    
+    <audio id="alertSound" src="notification.mp3"></audio>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="kitchen-script.js?v=6"></script> 
+
+</body>
+</html>

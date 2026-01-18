@@ -1,0 +1,38 @@
+{
+  "promoPopup": {
+    "line1": "15% off when you spend 55 €",
+    "line2": "Use code SAVE15 at checkout.",
+    "startDate": "2025-11-01",
+    "endDate": "2025-11-30"
+  },
+  "marqueeLines": [
+    "Mittagsangebot 12:00 bis 14:00 Uhr: alle Veggie- & Chickengerichte je 10,- €.",
+    "Buffet jeden letzten Sonntag im Monat von 14:00 bis 21:00 Uhr, nur 20,- € pro Person.",
+    "Kinder unter 6 Jahren sind frei. Kinder bis 14 Jahren sind 15,- € pro Person"
+  ],
+  "whatsappNumber": "4917660173800",
+  "featuredCouponCode": "SAVE15",
+  "coupons": [
+    {
+      "code": "LAMM2",
+      "discountType": "fixed",
+      "value": 2.00,
+      "appliesToCategory": "lamm",
+      "minValue": 0
+    },
+    {
+      "code": "SAVE15",
+      "discountType": "percent",
+      "value": 0.15,
+      "appliesToCategory": "all",
+      "minValue": 55.00
+    },
+    {
+      "code": "10PROZENT",
+      "discountType": "percent",
+      "value": 0.10,
+      "appliesToCategory": "all",
+      "minValue": 0
+    }
+  ]
+}

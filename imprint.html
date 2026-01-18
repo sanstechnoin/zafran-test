@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impressum - Zafran Delight</title>
+    <link rel="icon" href="favlogo.png" type="image/png">
+    <style>
+        /* --- KDS THEME VARIABLES --- */
+        :root {
+            --bg-dark: #1a1a1a;       
+            --card-bg: #2a2a2a;      
+            --gold: #D4AF37;
+            --text-main: #f0f0f0;
+            --text-subtle: #aaa;
+            --border-color: #444;
+        }
+
+        /* --- GLOBAL STYLES --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3 { color: var(--gold); margin-bottom: 15px; }
+        p { margin-bottom: 15px; color: var(--text-subtle); }
+        a { text-decoration: none; transition: all 0.3s ease; color: var(--gold); }
+        a:hover { color: #fff; }
+        
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        /* --- HEADER (MATCHING INDEX.HTML) --- */
+        header { 
+            position: fixed; width: 100%; top: 0; z-index: 1000; 
+            background: rgba(42, 42, 42, 0.95); 
+            border-bottom: 1px solid var(--gold); 
+            padding: 10px 0; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); 
+        }
+        .navbar { display: flex; justify-content: space-between; align-items: center; }
+        .logo img { height: 50px; display: block; }
+        
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { 
+            color: var(--gold); 
+            font-weight: 600; 
+            font-size: 0.95rem; 
+            text-transform: uppercase; 
+            color: var(--gold) !important; /* Force gold color */
+        }
+        .nav-links a:hover { color: #fff !important; }
+        
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+        
+        .lang-switch { display: flex; border: 1px solid var(--gold); border-radius: 4px; overflow: hidden; }
+        .lang-btn { background: transparent; border: none; color: var(--gold); padding: 5px 10px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+        .lang-btn.active { background: var(--gold); color: #000; }
+
+        .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; }
+        .bar { width: 30px; height: 3px; background: var(--gold); }
+
+        /* --- MAIN CONTENT --- */
+        main { padding-top: 160px; padding-bottom: 50px; flex: 1; }
+        
+        .legal-content {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- FOOTER --- */
+        footer { background: #000; padding: 40px 0; border-top: 1px solid var(--border-color); color: #666; font-size: 0.9rem; margin-top: auto; text-align: center; }
+        .footer-logo { height: 40px; margin-bottom: 20px; opacity: 0.6; }
+
+        /* --- RESPONSIVE HEADER --- */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            
+            .nav-links { 
+                position: fixed; 
+                top: 70px; 
+                left: 0; 
+                width: 100%; 
+                background: var(--card-bg); 
+                flex-direction: column; 
+                padding: 40px 20px; 
+                display: none; 
+                border-bottom: 1px solid var(--gold); 
+                box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+                align-items: center;
+                gap: 25px; 
+            }
+            
+            .nav-links.active { display: flex; } 
+            
+            .nav-links a {
+                display: block;
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+                font-size: 1.1rem;
+                border-bottom: 1px dashed rgba(212, 175, 55, 0.2); 
+            }
+            .nav-links a:last-of-type { border-bottom: none; }
+
+            .header-actions { 
+                flex-direction: column; 
+                width: 100%; 
+                gap: 15px; 
+                margin-top: 15px;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <a href="index.html" class="logo"><img src="logo.png" alt="Zafran Delight"></a>
+            <nav class="nav-links" id="navLinks">
+                <a href="index.html" data-i18n="nav_home">Startseite</a>
+                <a href="index.html#about" data-i18n="nav_story">Über Uns</a>
+                <a href="index.html#menu" data-i18n="nav_menu">Speisekarte</a>
+                <a href="index.html#offers" data-i18n="nav_offers">Angebote</a>
+                <a href="index.html#visit" data-i18n="nav_contact">Kontakt</a>
+                <div class="header-actions">
+                    <div class="lang-switch">
+                        <button class="lang-btn active" onclick="setLang('de')">DE</button>
+                        <button class="lang-btn" onclick="setLang('en')">EN</button>
+                    </div>
+                </div>
+            </nav>
+            <div class="hamburger" onclick="toggleMenu()">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="legal-content"></br>
+            <h1 data-i18n="imprint_title">Impressum</h1>
+            
+            <h3>Angaben gemäß § 5 TMG</h3>
+            <p>
+                <strong>Zafran Delight</strong><br>
+                Inhaber: Syed Hussain Haider Zaidi<br>
+                Kessenicher Straße 9<br>
+                53879 Euskirchen<br>
+                Deutschland
+            </p>
+
+            <h3>Kontakt</h3>
+            <p>
+                Telefon: <a href="tel:022511290950">02251 1290950</a><br>
+                E-Mail: <a href="mailto:delightzafran@gmail.com">delightzafran@gmail.com</a>
+            </p>
+
+            <h3>Umsatzsteuer-ID</h3>
+            <p>
+                Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br>
+                209/5160/4597
+            </p>
+
+            <h3>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h3>
+            <p>
+                Syed Hussain Haider Zaidi<br>
+                Kessenicher Straße 9<br>
+                53879 Euskirchen
+            </p>
+
+            <h3>EU-Streitschlichtung</h3>
+            <p>
+                Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: 
+                <a href="https://ec.europa.eu/consumers/odr/" target="_blank">https://ec.europa.eu/consumers/odr/</a>.<br>
+                Unsere E-Mail-Adresse finden Sie oben im Impressum.
+            </p>
+
+            <h3>Verbraucherstreitbeilegung/Universalschlichtungsstelle</h3>
+            <p>
+                Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+            </p>
+        </div>
+    </main>
+
+<footer style="background-color: #1a1a1a; color: #ccc; padding: 40px 20px; font-size: 0.8rem; text-align: center; border-top: 1px solid #333; margin-top: 50px;">
+    
+    <img src="logo.png" class="footer-logo" alt="Zafran" style="max-width: 120px; margin-bottom: 20px;">
+
+    <div style="margin-bottom: 30px; color: #666; line-height: 1.6;">
+        Inhaber: Syed Hussain Haider Zaidi | Kessenicher Str. 9, 53879 Euskirchen<br>
+        USt-IdNr gemäß § 27 a UStG
+    </div>
+
+    <div class="footer-links" style="border-top: 1px solid #333; padding-top: 20px; max-width: 900px; margin: 0 auto;">
+        
+        <p style="margin-bottom: 15px; font-size: 0.9rem;">
+            <a href="imprint.html" style="color: #D4AF37; text-decoration: none; margin: 0 10px;">Impressum</a> | 
+            <a href="privacy.html" style="color: #D4AF37; text-decoration: none; margin: 0 10px;">Datenschutzerklärung</a>
+        </p>
+        
+        <p style="margin: 0;">
+            &copy; 2025 Zafran Delight. Alle Rechte vorbehalten.
+        </p>
+        
+        <p style="margin-top: 5px; font-size: 0.75rem; color: #666;">
+            Designed & Developed by 
+            <a href="#" style="color: #888; text-decoration: none; font-weight: bold;">SAN Technologies</a>
+        </p>
+    </div>
+</footer>
+
+    <script>
+        // Menu Toggle
+        function toggleMenu() { document.getElementById('navLinks').classList.toggle('active'); }
+        
+        // Auto-Close Menu on Click
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+            });
+        });
+
+        // Simple Translations
+        const translations = {
+            de: {
+                nav_home: "Startseite", nav_story: "Über Uns", nav_menu: "Speisekarte", 
+                nav_offers: "Angebote", nav_contact: "Kontakt", imprint_title: "Impressum"
+            },
+            en: {
+                nav_home: "Home", nav_story: "Our Story", nav_menu: "Menu", 
+                nav_offers: "Offers", nav_contact: "Contact", imprint_title: "Legal Notice (Impressum)"
+            }
+        };
+
+        function setLang(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(translations[lang][key]) el.textContent = translations[lang][key];
+            });
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+        }
+    </script>
+    <div id="cookie-banner" style="position:fixed; bottom:0; left:0; width:100%; background:#111; color:white; padding:20px; border-top:2px solid #D4AF37; z-index:10000; display:none; box-shadow: 0 -5px 20px rgba(0,0,0,0.8);">
+    <div style="max-width: 1200px; margin: 0 auto; display:flex; flex-direction:column; gap:15px; align-items:center; text-align:center;">
+        
+        <h3 style="margin:0; color:#D4AF37;">🍪 Datenschutzeinstellungen</h3>
+        <p style="font-size:0.9rem; color:#ccc; margin:0;">
+            Wir nutzen Cookies und externe Dienste (Google Fonts, Firebase, OpenStreetMap), um unsere Website zu betreiben. 
+            Einige sind technisch notwendig, andere helfen uns, unser Angebot zu verbessern.
+            <br>
+            <a href="privacy.html" style="color:#fff; text-decoration:underline;">Mehr erfahren</a> | 
+            <a href="imprint.html" style="color:#fff; text-decoration:underline;">Impressum</a>
+        </p>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button onclick="acceptAllCookies()" style="background:#D4AF37; color:black; border:none; padding:10px 25px; border-radius:5px; font-weight:bold; cursor:pointer;">Alle Akzeptieren</button>
+            <button onclick="acceptEssentialCookies()" style="background:#333; color:white; border:1px solid #666; padding:10px 25px; border-radius:5px; cursor:pointer;">Nur Notwendige</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Check if user already decided
+    if (!localStorage.getItem('cookieConsent')) {
+        document.getElementById('cookie-banner').style.display = 'block';
+    }
+
+    function acceptAllCookies() {
+        localStorage.setItem('cookieConsent', 'all');
+        document.getElementById('cookie-banner').style.display = 'none';
+        // Only load map if the function exists (prevents errors on other pages)
+        if (typeof loadMap === 'function') {
+        loadMap();
+        }
+    }
+
+    function acceptEssentialCookies() {
+        localStorage.setItem('cookieConsent', 'essential');
+        document.getElementById('cookie-banner').style.display = 'none';
+    }
+</script>
+</body>
+</html>

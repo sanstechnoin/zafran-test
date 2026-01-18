@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zafran Delight - Digital Card</title>
+    <style>
+        /* --- 1. CORE VARIABLES & RESET --- */
+        :root {
+            --gold: #D4AF37;
+            --gold-hover: #b5952f;
+            --bg-dark: #121212;
+            --card-bg: #1E1E1E;
+            --input-bg: #2a2a2a;
+            --text-white: #ffffff;
+            --text-gray: #b0b0b0;
+            --border-color: #333333;
+            --shadow: 0 8px 24px rgba(0,0,0,0.5);
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* --- 2. MAIN CONTAINER (MOBILE LAYOUT) --- */
+        .mobile-container {
+            width: 100%;
+            max-width: 420px; /* Slightly wider for form readability */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 50px;
+        }
+
+        /* --- 3. HEADER & PROFILE --- */
+        .profile-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .profile-img-wrapper {
+            width: 130px;
+            height: 130px;
+            margin: 0 auto 15px;
+            position: relative;
+        }
+
+        .profile-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--gold);
+            object-fit: cover;
+            background: #000;
+        }
+
+        .verified-badge {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: var(--gold);
+            color: #000;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            border: 2px solid var(--bg-dark);
+        }
+
+        h1 { margin: 5px 0; font-size: 26px; font-weight: 700; color: #fff; }
+        .role { color: var(--gold); font-weight: 600; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+        .location { color: var(--text-gray); font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+        /* --- 4. ACTION BUTTONS --- */
+        .btn-main {
+            width: 100%;
+            padding: 16px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s, background 0.2s;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-gold {
+            background-color: var(--gold);
+            color: #000;
+        }
+        .btn-gold:active { transform: scale(0.98); background-color: var(--gold-hover); }
+
+        .btn-dark {
+            background-color: var(--card-bg);
+            color: #fff;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+        }
+        .btn-dark:active { transform: scale(0.98); background-color: #252525; }
+
+        /* --- 5. CONTACT GRID --- */
+        .grid-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .icon-box {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text-gray);
+            font-size: 12px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .icon-box:hover { border-color: var(--gold); color: #fff; }
+        .icon-box svg { width: 24px; height: 24px; fill: var(--gold); }
+
+        /* --- 6. LIST ITEMS (Specialties) --- */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0 10px;
+        }
+        .section-header span { background: var(--bg-dark); padding: 0 10px; color: var(--text-gray); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; }
+        .section-header::before, .section-header::after { content: ""; height: 1px; background: #333; flex: 1; }
+
+        .list-item {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #fff;
+            font-size: 15px;
+        }
+
+        /* --- 7. MODAL STYLES (MATCHING YOUR FORM HTML) --- */
+        /* I created these specifically to handle the HTML classes you provided */
+        
+        .modal-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .modal-box {
+            background: var(--card-bg);
+            width: 100%;
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 1px solid #333;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 30px;
+            color: #888;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close-modal:hover { color: #fff; }
+
+        /* Form Inputs Styling */
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--gold);
+        }
+
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="time"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px !important;
+            color: #fff !important;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--gold) !important;
+        }
+
+        /* Styles specifically for your form buttons */
+        .modal-btn {
+            background: var(--gold);
+            color: #000;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Success Message styling */
+        .success-message {
+            display: none; /* Hidden initially */
+            text-align: center;
+            padding: 20px 0;
+        }
+        .success-icon {
+            display: block;
+            width: 60px; height: 60px;
+            background: var(--gold);
+            color: #000;
+            border-radius: 50%;
+            font-size: 30px;
+            line-height: 60px;
+            margin: 0 auto 15px;
+        }
+
+        /* --- FOOTER --- */
+        .footer {
+            text-align: center;
+            color: #555;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <div class="profile-section">
+            <div class="profile-img-wrapper">
+                <img src="https://zafraneuskirchen.de/assets/img/logo.png" alt="Zafran" class="profile-img">
+                <div class="verified-badge">✓</div>
+            </div>
+            <h1>Zafran Delight</h1>
+            <div class="role">Authentic Indian & Pakistani Cuisine</div>
+            <div class="location">📍 Euskirchen, Germany</div>
+        </div>
+
+        <div>
+            <a href="#" class="btn-main btn-gold" onclick="alert('Download vCard Logic Here')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                Save Contact
+            </a>
+            
+            <button class="btn-main btn-dark" onclick="openCateringModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>
+                Catering Anfrage
+            </button>
+        </div>
+
+        <div class="grid-actions">
+            <a href="https://wa.me/4922519599741" class="icon-box">
+                <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                <span>WhatsApp</span>
+            </a>
+            <a href="tel:022511290950" class="icon-box">
+                <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                <span>Call</span>
+            </a>
+            <a href="https://zafraneuskirchen.de" class="icon-box">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                <span>Website</span>
+            </a>
+        </div>
+
+        <div class="section-header"><span>Our Specialties</span></div>
+        <div class="list-item">
+            <span>🍛</span> Authentic Indian Curries
+        </div>
+        <div class="list-item">
+            <span>🔥</span> Live Tandoor & Grill
+        </div>
+        <div class="list-item">
+            <span>🎉</span> Event Catering (50-500)
+        </div>
+
+        <div class="footer">
+            Made with ❤️ in Euskirchen<br>
+            © 2026 Zafran Delight
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="cateringModal">
+        <div class="modal-box" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <span class="close-modal" onclick="closeCateringModal()">×</span>
+            
+            <div id="cateringFormContainer">
+                <h3 style="color: var(--gold); margin-bottom: 10px;" data-i18n="cat_modal_title">Catering Anfrage</h3>
+                <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 25px;" data-i18n="cat_modal_subtitle">
+                    Planen Sie Ihr Event mit Chef Zaidi. Füllen Sie das Formular aus, wir erstellen Ihnen ein individuelles Angebot.
+                </p>
+
+                <form id="cateringForm" onsubmit="handleCateringSubmit(event)">
+                    
+                    <h4 style="color: var(--gold); border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 15px; font-size: 1rem;" data-i18n="cat_sec_contact">Kontaktdaten</h4>
+                    <div class="form-group"><label data-i18n="form_name">Name / Firma</label><input type="text" name="name" required placeholder="Ihr Name"></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group"><label data-i18n="form_email">Email</label><input type="email" name="email" required placeholder="name@example.com"></div>
+                        <div class="form-group"><label data-i18n="form_phone">Telefon</label><input type="tel" name="phone" required placeholder="Für Rückfragen"></div>
+                    </div>
+
+                    <h4 style="color: var(--gold); border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 15px; margin-top: 20px; font-size: 1rem;" data-i18n="cat_sec_event">Event Details</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                        <div class="form-group"><label data-i18n="form_date">Datum</label><input type="date" name="date" required></div>
+                        <div class="form-group"><label data-i18n="cat_time">Startzeit</label><input type="time" name="time" required></div>
+                        <div class="form-group"><label data-i18n="form_guests">Gäste</label><input type="number" name="guests" min="10" placeholder="z.B. 50"></div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label data-i18n="cat_location">Veranstaltungsort</label>
+                            <select name="location">
+                                <option value="External" data-i18n="loc_external">Extern (Lieferung/Halle)</option>
+                                <option value="Restaurant" data-i18n="loc_restaurant">Im Restaurant (Zafran Delight)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="cat_service">Service-Art</label>
+                            <select name="service_type">
+                                <option value="Buffet Delivery" data-i18n="srv_buffet">Buffet Lieferung (Drop-off)</option>
+                                <option value="Full Service" data-i18n="srv_full">Full Service Catering</option>
+                                <option value="Live Tandoor" data-i18n="srv_live">Live Tandoor Station (Premium)</option>
+                                <option value="Finger Food" data-i18n="srv_finger">Finger Food / Empfang</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="cat_msg">Wünsche / Menü-Vorstellungen</label>
+                        <textarea name="message" rows="3" placeholder="Z.B. Wir hätten gerne Butter Chicken..."></textarea>
+                    </div>
+
+                    <div class="form-group" style="display: flex; align-items: flex-start; gap: 10px; margin-top: 15px;">
+                        <input type="checkbox" id="cat-privacy" required style="width: auto; margin-top: 3px;">
+                        <label for="cat-privacy" style="font-weight: normal; font-size: 0.85rem; color: #ccc; margin: 0; line-height: 1.4;">
+                            Ich stimme der <a href="#" style="color: var(--gold); text-decoration: underline;">Datenschutzerklärung</a> zu.
+                        </label>
+                    </div>
+
+                    <input type="hidden" name="_subject" value="New Catering Inquiry">
+                    <input type="hidden" name="_captcha" value="false">
+                    <button type="submit" class="modal-btn" data-i18n="btn_req_quote">Angebot Anfordern</button>
+                </form>
+            </div>
+
+            <div id="cateringSuccess" class="success-message">
+                <span class="success-icon">✓</span>
+                <h3 data-i18n="cat_success_title" style="color:var(--gold)">Anfrage Erhalten!</h3>
+                <p data-i18n="cat_success_msg" style="color:#ccc">Vielen Dank für Ihr Interesse. Chef Zaidi wird sich persönlich bei Ihnen melden.</p>
+                <button class="modal-btn" onclick="closeCateringModal()" style="margin-top: 20px;">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Open the Modal
+        function openCateringModal() {
+            document.getElementById('cateringModal').style.display = 'flex';
+        }
+
+        // 2. Close the Modal
+        function closeCateringModal() {
+            document.getElementById('cateringModal').style.display = 'none';
+        }
+
+        // 3. Close if clicked outside the box
+        window.onclick = function(event) {
+            let modal = document.getElementById('cateringModal');
+            if (event.target == modal) {
+                closeCateringModal();
+            }
+        }
+
+        // 4. Handle Submit (Visual only - connect your backend here)
+        function handleCateringSubmit(event) {
+            event.preventDefault(); // Stop actual refresh for demo
+            
+            // Hide Form, Show Success
+            document.getElementById('cateringFormContainer').style.display = 'none';
+            document.getElementById('cateringSuccess').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

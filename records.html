@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Command Center | Zaffran</title>
+    <link rel="icon" type="image/png" href="favlogo.png">
+    <link rel="stylesheet" href="style.css?v=35">
+    <style>
+        /* --- ENTERPRISE THEME VARIABLES --- */
+        :root {
+            --ent-bg: #121212;
+            --ent-panel: #1e1e2d; /* Charcoal - SAP Modern Dark */
+            --ent-header: #2b2b40;
+            --ent-border: #3a3a4e;
+            --gold: #D4AF37;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --success: #00c853;
+            --danger: #ff5252;
+            
+            /* LAYOUT CONSTRAINT (Keeps everything aligned) */
+            --content-width: 1400px; 
+        }
+
+        body { 
+            background-color: var(--ent-bg); 
+            color: var(--text-main); 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+
+        /* --- LAYOUT UTILITY --- */
+        .layout-container {
+            width: 100%;
+            max-width: var(--content-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- HEADER --- */
+        header { 
+            background: var(--ent-panel); 
+            border-bottom: 1px solid var(--gold); 
+            height: 60px; 
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+        .header-inner {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            width: 100%;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--gold); font-size: 1.2rem; text-transform: uppercase; }
+        .brand img { height: 35px; }
+        
+        .system-status { 
+            font-size: 0.85rem; 
+            background: #111; 
+            padding: 5px 12px; 
+            border-radius: 4px; 
+            border: 1px solid #333; 
+            color: var(--text-muted);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; display: inline-block; }
+        .status-dot.online { background: var(--success); box-shadow: 0 0 5px var(--success); }
+
+        /* --- MAIN LAYOUT --- */
+        .dashboard-container { 
+            flex: 1; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column;
+            width: 100%;
+            padding-bottom: 50px; /* Space for footer */
+        }
+
+        /* Content Wrapper */
+        .content-area { 
+            padding: 30px 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            width: 100%;
+            max-width: var(--content-width);
+            margin: 0 auto; /* Centers the content */
+        }
+
+        /* --- KPI RIBBON --- */
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .kpi-card { 
+            background: var(--ent-panel); 
+            border: 1px solid var(--ent-border); 
+            padding: 20px; 
+            border-radius: 6px; 
+            position: relative; 
+            overflow: hidden; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--gold); }
+        .kpi-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        .kpi-value { font-size: 2rem; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+        .kpi-sub { font-size: 0.8rem; color: var(--success); margin-top: 5px; display: block; }
+
+        /* --- TOOLBAR --- */
+        .toolbar { 
+            background: var(--ent-panel); 
+            padding: 15px; 
+            border-radius: 6px; 
+            border: 1px solid var(--ent-border); 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 15px; 
+            align-items: center; 
+            justify-content: space-between; 
+        }
+        .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        
+        input[type="date"] { 
+            background: #121212; border: 1px solid var(--ent-border); color: white; 
+            padding: 8px 12px; border-radius: 4px; color-scheme: dark; font-family: inherit; 
+        }
+        
+        .btn-tool { 
+            background: #333; color: white; border: 1px solid #555; 
+            padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-weight: 600; 
+            display: flex; align-items: center; gap: 8px; transition: 0.2s; 
+        }
+        .btn-tool:hover { background: #444; border-color: #777; }
+        .btn-primary { background: var(--gold); color: black; border-color: var(--gold); }
+        .btn-primary:hover { background: #b8860b; color: black; }
+
+        /* --- DATA TABLE --- */
+        .table-container { 
+            background: var(--ent-panel); 
+            border: 1px solid var(--ent-border); 
+            border-radius: 6px; 
+            overflow: hidden; 
+            display: flex; flex-direction: column;
+        }
+        .table-scroll { overflow: auto; flex: 1; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        thead { background: #2b2b40; position: sticky; top: 0; z-index: 10; }
+        th { text-align: left; padding: 12px 15px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; border-bottom: 2px solid var(--ent-border); white-space: nowrap; }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--ent-border); color: var(--text-main); vertical-align: middle; }
+        tr:hover { background: rgba(212, 175, 55, 0.05); cursor: pointer; }
+        
+        /* Badges */
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+        .badge-pickup { background: rgba(52, 152, 219, 0.15); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.3); }
+        .badge-dinein { background: rgba(212, 175, 55, 0.15); color: var(--gold); border: 1px solid rgba(212, 175, 55, 0.3); }
+        .badge-delivery { background: rgba(230, 126, 34, 0.15); color: #e67e22; border: 1px solid rgba(230, 126, 34, 0.3); }
+
+        /* --- SIDE PANEL --- */
+        .side-panel {
+            position: fixed; top: 60px; right: -450px; width: 400px; bottom: 40px; 
+            background: #181820; border-left: 1px solid var(--gold);
+            box-shadow: -5px 0 30px rgba(0,0,0,0.7);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            display: flex; flex-direction: column;
+        }
+        .side-panel.open { right: 0; }
+        
+        .panel-header { padding: 20px; background: var(--ent-panel); border-bottom: 1px solid var(--ent-border); display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { margin: 0; color: var(--gold); font-size: 1.2rem; }
+        .panel-body { padding: 20px; overflow-y: auto; flex: 1; }
+        
+        .receipt-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #444; color: #ccc; }
+        .receipt-total { display: flex; justify-content: space-between; padding-top: 15px; margin-top: 15px; border-top: 2px solid var(--gold); font-size: 1.4rem; font-weight: bold; color: white; }
+
+        .btn-close-panel { background: none; border: none; color: #888; font-size: 1.5rem; cursor: pointer; }
+        .btn-close-panel:hover { color: white; }
+
+        /* --- FOOTER (CONTAINED) --- */
+        .site-credit-footer {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--ent-header);
+            border-top: 1px solid var(--gold);
+            padding: 8px 0; 
+            font-size: 0.8rem;
+            color: #888;
+            display: flex; justify-content: center;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+        .footer-inner {
+            display: flex; justify-content: space-between; align-items: center; width: 100%;
+        }
+        .footer-line-one { display: flex; width: 100%; justify-content: space-between; align-items: center; }
+        .footer-developer a { color: var(--gold); text-decoration: none; font-weight: bold; transition: color 0.3s; }
+        .footer-developer a:hover { color: #fff; text-decoration: underline; }
+        .footer-developer span { margin-left: 10px; color: #aaa; border-left: 1px solid #555; padding-left: 10px; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .side-panel { width: 100%; top: 0; bottom: 0; z-index: 2000; }
+            th:nth-child(2), td:nth-child(2), /* Time */
+            th:nth-child(4), td:nth-child(4)  /* Type */
+            { display: none; }
+            .kpi-row { grid-template-columns: 1fr 1fr; }
+            .kpi-card:last-child { grid-column: span 2; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .footer-line-one { flex-direction: column; gap: 5px; text-align: center; }
+            .footer-developer span { display: block; border: none; padding: 0; margin: 2px 0 0 0; }
+        }
+    </style>
+</head>
+<body class="records-body">
+
+    <header>
+        <div class="layout-container header-inner">
+            <div class="brand">
+                <img src="logo.png" alt="Logo">
+                <span>Sales Command Center</span>
+            </div>
+            <div class="system-status">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="connection-text">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        
+        <main class="content-area" id="records-content-wrapper" style="opacity: 0.3;">
+            
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <span class="kpi-label">Total Revenue</span>
+                    <div class="kpi-value" id="total-revenue">0.00 €</div>
+                    <span class="kpi-sub">Selected Period</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Total Orders</span>
+                    <div class="kpi-value" id="total-orders">0</div>
+                    <span class="kpi-sub">Completed Transactions</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Avg. Ticket</span>
+                    <div class="kpi-value" id="avg-ticket">0.00 €</div>
+                    <span class="kpi-sub">Revenue / Order</span>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <div class="filters">
+                    <input type="date" id="start-date" title="Start Date">
+                    <span style="color:#666;">to</span>
+                    <input type="date" id="end-date" title="End Date">
+                    <button id="filter-btn" class="btn-tool btn-primary">
+                        <span>🔍</span> Filter Records
+                    </button>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button id="export-btn" class="btn-tool"><span>📊</span> Export CSV</button>
+                    <button id="print-btn" class="btn-tool"><span>🖨️</span> Print View</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-scroll">
+                    <table id="records-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Table / Customer</th>
+                                <th>Type</th>
+                                <th style="text-align:right;">Amount</th>
+                                <th style="text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="records-list">
+                            <tr><td colspan="6" style="text-align:center; padding:30px; color:#666;">Please login to load data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+
+        <aside class="side-panel" id="detailPanel">
+            <div class="panel-header">
+                <h3 class="panel-title" id="panel-title">Order Details</h3>
+                <button class="btn-close-panel" onclick="closePanel()">×</button>
+            </div>
+            <div class="panel-body">
+                <div style="background:#222; padding:15px; border-radius:4px; border:1px solid #333; margin-bottom:20px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="color:#888;">Order ID:</span>
+                        <span id="panel-id" style="color:var(--gold); font-family:monospace;">#---</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#888;">Closed At:</span>
+                        <span id="panel-time">--:--</span>
+                    </div>
+                </div>
+                
+                <h4 style="color:#888; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:10px;">Items</h4>
+                <div id="panel-items">
+                    </div>
+
+                <div class="receipt-total">
+                    <span>Total Paid</span>
+                    <span id="panel-total">0.00 €</span>
+                </div>
+
+                <div style="margin-top:30px; display:flex; gap:10px;">
+                    <button onclick="window.print()" class="btn-tool btn-primary" style="flex:1; justify-content:center;">Print Receipt</button>
+                    <button onclick="closePanel()" class="btn-tool" style="flex:1; justify-content:center;">Close</button>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <div id="records-login-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; justify-content:center; align-items:center;">
+        <div style="background:#2a2a2a; padding:40px; border:1px solid var(--gold); border-radius:8px; text-align:center; box-shadow:0 0 50px rgba(212, 175, 55, 0.2);">
+            <img src="logo.png" style="height:60px; margin-bottom:20px;">
+            <h3 style="color:var(--gold); margin-top:0; text-transform:uppercase; letter-spacing:1px;">Management Access</h3>
+            <p style="color:#888; margin-bottom:20px; font-size:0.9rem;">Secure Area. Please authenticate.</p>
+            <input type="password" id="records-password" placeholder="Enter PIN" style="padding:12px; width:220px; text-align:center; background:#111; border:1px solid #444; color:white; border-radius:4px; margin-bottom:15px; font-size:1.1rem; letter-spacing:3px;">
+            <br>
+            <p id="login-error" style="color:var(--danger); display:none; font-size:0.8rem; margin-bottom:15px;">Incorrect Password</p>
+            <button id="login-button" class="btn-tool btn-primary" style="width:100%; justify-content:center; padding:12px;">UNLOCK DASHBOARD</button>
+        </div>
+    </div>
+
+    <footer class="site-credit-footer" id="footer-bar">
+        <div class="layout-container footer-inner">
+            <div class="footer-line-one">
+                <p class="footer-copyright">
+                    &copy; 2025 Zaffran Delight, Euskirchen | System v2.0
+                </p>
+                <p class="footer-developer">
+                    Developed by <a href="https://santechnologies.de/" target="_blank" rel="noopener noreferrer" style="color: #888; text-decoration: none; font-weight: bold;">SAN Technologies</a> 
+                    <span>📞 +49 162 3757839</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="records-script.js"></script>
+    
+    <script>
+        // --- 1. FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVh2kVIuFcrt8Dg88emuEd9CQlqjJxDrA",
+            authDomain: "zaffran-delight.firebaseapp.com",
+            projectId: "zaffran-delight",
+            storageBucket: "zaffran-delight.firebasestorage.app",
+            messagingSenderId: "1022960860126",
+            appId: "1:1022960860126:web:1e06693dea1d0247a0bb4f"
+        };
+
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.firestore();
+
+        // --- 2. LOGIC ---
+        document.addEventListener("DOMContentLoaded", () => {
+            // Elements
+            const loginOverlay = document.getElementById('records-login-overlay');
+            const loginButton = document.getElementById('login-button');
+            const passwordInput = document.getElementById('records-password');
+            const loginError = document.getElementById('login-error');
+            const contentWrapper = document.getElementById('records-content-wrapper');
+            const statusDot = document.getElementById('status-dot');
+            const connectionText = document.getElementById('connection-text');
+
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const filterBtn = document.getElementById('filter-btn');
+            const exportBtn = document.getElementById('export-btn');
+            const printBtn = document.getElementById('print-btn');
+
+            const totalRevenueEl = document.getElementById('total-revenue');
+            const totalOrdersEl = document.getElementById('total-orders');
+            const avgTicketEl = document.getElementById('avg-ticket');
+            const recordsTbody = document.getElementById('records-list');
+
+            // Side Panel
+            const detailPanel = document.getElementById('detailPanel');
+            const panelTitle = document.getElementById('panel-title');
+            const panelId = document.getElementById('panel-id');
+            const panelTime = document.getElementById('panel-time');
+            const panelItems = document.getElementById('panel-items');
+            const panelTotal = document.getElementById('panel-total');
+
+            const RECORDS_PASSWORD = "zafran"; 
+            let allFetchedRecords = []; 
+
+            // Login Handler
+            loginButton.addEventListener('click', () => {
+                if (passwordInput.value === RECORDS_PASSWORD) {
+                    loginOverlay.style.display = 'none';
+                    contentWrapper.style.opacity = '1';
+                    initializeRecordsPage(); 
+                } else {
+                    loginError.style.display = 'block';
+                }
+            });
+            passwordInput.addEventListener('keyup', (e) => e.key === 'Enter' && loginButton.click());
+
+            function initializeRecordsPage() {
+                statusDot.classList.add('online');
+                connectionText.textContent = "System Online";
+                
+                const today = new Date().toISOString().split('T')[0];
+                startDateInput.value = today;
+                endDateInput.value = today;
+
+                filterBtn.addEventListener('click', fetchRecords);
+                printBtn.addEventListener('click', () => window.print());
+                exportBtn.addEventListener('click', exportToCSV);
+                
+                // Auto Load
+                fetchRecords();
+            }
+
+            async function fetchRecords() {
+                let startDate = new Date(startDateInput.value + 'T00:00:00');
+                let endDate = new Date(endDateInput.value + 'T23:59:59');
+
+                if (isNaN(startDate) || isNaN(endDate)) { alert("Please check dates."); return; }
+
+                filterBtn.disabled = true;
+                filterBtn.innerHTML = "<span>⏳</span> Loading...";
+                recordsTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:#888;">Retrieving Data from Cloud...</td></tr>`;
+
+                try {
+                    const query = db.collection("archived_orders")
+                        .where("closedAt", ">=", firebase.firestore.Timestamp.fromDate(startDate))
+                        .where("closedAt", "<=", firebase.firestore.Timestamp.fromDate(endDate))
+                        .orderBy("closedAt", "asc"); 
+
+                    const snapshot = await query.get();
+                    
+                    const records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    allFetchedRecords = records.reverse(); 
+                    
+                    renderRecords(allFetchedRecords);
+                    calculateKPIs(allFetchedRecords);
+
+                } catch (error) {
+                    console.error("Error:", error);
+                    recordsTbody.innerHTML = `<tr><td colspan="6" style="color:#ff5252; text-align:center; padding:20px;">
+                        <strong>System Error:</strong> ${error.message}<br>
+                        <small>Check browser console (F12) for Index Creation Link if first run.</small>
+                    </td></tr>`;
+                } finally {
+                    filterBtn.disabled = false;
+                    filterBtn.innerHTML = "<span>🔍</span> Filter Records";
+                }
+            }
+
+            function renderRecords(records) {
+                recordsTbody.innerHTML = ""; 
+
+                if (records.length === 0) {
+                    recordsTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:#666;">No sales records found for this period.</td></tr>`;
+                    return;
+                }
+
+                records.forEach(record => {
+                    let recordDate = "N/A";
+                    let recordTime = "N/A";
+                    
+                    if (record.closedAt && record.closedAt.toDate) {
+                        const dateObj = record.closedAt.toDate();
+                        recordDate = dateObj.toLocaleDateString('de-DE');
+                        recordTime = dateObj.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
+                    }
+                    
+                    // SAFE AMOUNT CHECK
+                    const amount = record.paidAmount || record.total || 0;
+                    
+                    let tableName = record.table || "Unknown";
+                    let typeBadge = "";
+                    
+                    if (record.orderType === 'pickup') {
+                        typeBadge = `<span class="badge badge-pickup">Pickup</span>`;
+                        tableName = record.customerName || "Walk-in";
+                    } else if (record.orderType === 'delivery') {
+                        typeBadge = `<span class="badge badge-delivery">Delivery</span>`;
+                        tableName = record.customerName || "Delivery";
+                    } else {
+                        typeBadge = `<span class="badge badge-dinein">Dine-In</span>`;
+                        tableName = `Table ${tableName}`;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${recordDate}</td>
+                        <td>${recordTime}</td>
+                        <td style="font-weight:600; color:#fff;">${tableName}</td>
+                        <td>${typeBadge}</td>
+                        <td style="text-align:right; font-family:monospace; font-size:1rem; color:var(--success);">${Number(amount).toFixed(2)} €</td>
+                        <td style="text-align:center;">
+                            <button class="btn-tool" style="padding:4px 10px; font-size:0.8rem; background:transparent; border:1px solid #555;" onclick="window.showDetail('${record.id}')">View</button>
+                        </td>
+                    `;
+                    recordsTbody.appendChild(tr);
+                });
+            }
+
+            function calculateKPIs(records) {
+                let totalRevenue = 0;
+                records.forEach(r => totalRevenue += Number(r.paidAmount || r.total || 0));
+                
+                const count = records.length;
+                const avg = count > 0 ? (totalRevenue / count) : 0;
+
+                totalRevenueEl.textContent = `${totalRevenue.toFixed(2)} €`;
+                totalOrdersEl.textContent = count;
+                avgTicketEl.textContent = `${avg.toFixed(2)} €`;
+            }
+
+            window.showDetail = function(id) {
+                const record = allFetchedRecords.find(r => r.id === id);
+                if(!record) return;
+
+                let title = record.table;
+                if(record.orderType === 'pickup' || record.orderType === 'delivery') title = record.customerName;
+
+                panelTitle.innerText = record.orderType === 'dine-in' ? `Table ${title}` : title;
+                panelId.innerText = `#${record.id.substring(0, 8)}...`;
+                
+                if (record.closedAt && record.closedAt.toDate) {
+                    panelTime.innerText = record.closedAt.toDate().toLocaleString('de-DE');
+                }
+
+                panelItems.innerHTML = "";
+                if (record.items && Array.isArray(record.items)) {
+                    record.items.forEach(item => {
+                        const price = item.price || 0;
+                        const row = document.createElement('div');
+                        row.className = 'receipt-item';
+                        row.innerHTML = `
+                            <span>${item.quantity}x ${item.name}</span>
+                            <span>${(item.quantity * price).toFixed(2)} €</span>
+                        `;
+                        panelItems.appendChild(row);
+                    });
+                } else {
+                    panelItems.innerHTML = "<p style='color:#666;'>No item details stored.</p>";
+                }
+
+                const total = record.paidAmount || record.total || 0;
+                panelTotal.innerText = `${Number(total).toFixed(2)} €`;
+
+                detailPanel.classList.add('open');
+            }
+
+            window.closePanel = function() {
+                detailPanel.classList.remove('open');
+            }
+
+            function exportToCSV() {
+                if(allFetchedRecords.length === 0) {
+                    alert("No data to export.");
+                    return;
+                }
+
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += "Date,Time,OrderType,Table/Customer,Items,TotalAmount(EUR)\n";
+
+                allFetchedRecords.forEach(r => {
+                    let dateStr = "", timeStr = "";
+                    if (r.closedAt && r.closedAt.toDate) {
+                        const d = r.closedAt.toDate();
+                        dateStr = d.toLocaleDateString('de-DE');
+                        timeStr = d.toLocaleTimeString('de-DE');
+                    }
+                    
+                    const name = (r.orderType === 'dine-in') ? `Table ${r.table}` : (r.customerName || "Customer");
+                    const total = Number(r.paidAmount || r.total || 0).toFixed(2);
+                    
+                    let itemStr = "";
+                    if(r.items) itemStr = r.items.map(i => `${i.quantity}x ${i.name}`).join(" | ");
+                    itemStr = itemStr.replace(/,/g, "").replace(/"/g, "'"); 
+
+                    csvContent += `${dateStr},${timeStr},${r.orderType},${name},"${itemStr}",${total}\n`;
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `sales_report_${startDateInput.value}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaffran Waiter Station</title>
+    <link rel="stylesheet" href="style.css?v=35"> 
+    <link rel="icon" type="image/png" href="favlogo.png">
+    <style>
+        /* --- SERVICE ALERT STYLES (Your Existing Styles) --- */
+        #waiter-call-overlay .kitchen-popup-box {
+            border: 4px solid #ff4444;
+            background-color: #2a0a0a; /* Dark Red Background */
+            box-shadow: 0 0 50px #ff4444; /* Glowing Red Effect */
+            animation: pulse-red 1s infinite alternate;
+        }
+        
+        #waiter-call-overlay h3 { 
+            color: #ff4444; 
+            font-size: 2rem; 
+            margin-bottom: 10px; 
+            text-transform: uppercase;
+        }
+        
+        #waiter-call-table { 
+            font-size: 4rem; 
+            color: white; 
+            margin: 20px 0; 
+            font-weight: bold; 
+            text-shadow: 2px 2px 4px black;
+        }
+        
+        #dismiss-waiter-btn {
+            background-color: #ff4444; 
+            color: white; 
+            font-size: 1.5rem; 
+            padding: 20px; 
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        
+        #dismiss-waiter-btn:hover { background-color: #cc0000; }
+
+        @keyframes pulse-red {
+            from { box-shadow: 0 0 20px #ff4444; }
+            to { box-shadow: 0 0 60px #ff4444; }
+        }
+        
+        /* Utility to hide elements */
+        .hidden { display: none !important; }
+
+        /* --- NEW: PAYMENT MODAL STYLES (The Upgrade) --- */
+        #payment-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); /* Dark overlay */
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Ensure it is hidden when class 'hidden' is added */
+        #payment-modal.hidden { display: none; }
+
+        .payment-box {
+            background-color: #2a2a2a; /* Matches your card bg */
+            border: 2px solid #D4AF37; /* Gold Border */
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            padding: 0;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+            animation: popIn 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        .payment-header {
+            background: #111;
+            padding: 15px 20px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .payment-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .payment-footer {
+            padding: 20px;
+            border-top: 1px solid #444;
+            background: #1a1a1a;
+            display: flex;
+            gap: 15px;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Order List Styling inside Modal */
+        .pay-item-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #444;
+            padding: 8px 0;
+            color: #ddd;
+        }
+        .pay-total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #D4AF37;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #D4AF37;
+        }
+    </style>
+</head>
+<body class="kitchen-body">
+
+    <header class="kitchen-header">
+        <div class="header-logo">
+            <img src="logo.png" alt="Zaffran Logo">
+            <h1>Waiter Station</h1> <span id="connection-icon">...</span>
+        </div>
+    </header>
+
+    <main class="kitchen-main">
+        <div id="kds-content-wrapper" style="opacity: 0.2;"> 
+            <div class="kds-section-header">
+                <h2>Dine-In Orders</h2>
+            </div>
+            <div class="table-grid" id="dine-in-grid">
+                </div>
+
+            <div class="kds-section-header">
+                <h2>Online Orders</h2>
+            </div>
+            <div class="pickup-grid" id="pickup-grid">
+                <div class="pickup-box-empty">
+                    <p>Waiting for online orders...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-credit-footer" id="footer-bar">
+        <div class="footer-line-one">
+             <p class="footer-developer">
+                Created & Developed by <a href="https://santechnologies.de/" target="_blank" rel="noopener noreferrer" style="color: #888; text-decoration: none; font-weight: bold;">SAN Technologies</a> +49 162 3757839
+            </p>
+            <p class="footer-copyright">
+                &copy; Zaffran Delight, Euskirchen 2025
+            </p>
+        </div>
+   </footer>    
+
+    <div id="ready-notification-popup" class="kitchen-popup-overlay hidden">
+        <div class="kitchen-popup-box">
+            <h3>✅ Order Ready!</h3>
+            <div id="ready-popup-details"></div>
+            <button id="close-ready-popup-btn">OK</button>
+        </div>
+    </div>
+    
+    <div id="waiter-call-overlay" class="kitchen-popup-overlay hidden">
+        <div class="kitchen-popup-box">
+            <h3>⚠️ SERVICE REQUEST ⚠️</h3>
+            <div id="waiter-call-table">TABLE ?</div>
+            <p style="color: #ccc; margin-bottom: 20px; font-size: 1.2rem;">Customer is calling for assistance.</p>
+            <button id="dismiss-waiter-btn">✅ I AM GOING</button>
+        </div>
+    </div>
+    
+    <div id="kitchen-login-overlay" class="kitchen-popup-overlay">
+        <div class="kitchen-popup-box">
+            <h3>Waiter Station Login</h3>
+            <p>Please enter the admin password.</p>
+            <input type="password" id="kitchen-password" placeholder="Password" style="text-align: center; margin-bottom: 10px;">
+            <p id="login-error" style="color: red; display: none;">Invalid Password</p>
+            <button id="login-button">Login</button>
+            <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">(Login enables notification sounds)</p>
+        </div>
+    </div>
+
+    <div id="waiter-order-modal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:5000; display:flex; justify-content:center; align-items:center;">
+        <div class="waiter-popup-content" style="background:#222; padding:20px; width:90%; max-width:600px; border-radius:8px; border:1px solid #444;">
+            <div class="waiter-popup-header" style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h3 id="modal-table-title" style="color:#D4AF37; margin:0;">Order for Table ?</h3>
+                <button id="close-modal-x" style="background:none;border:none;color:white;font-size:2em;cursor:pointer;">&times;</button>
+            </div>
+            <div class="waiter-popup-body">
+                <input type="text" id="menu-search" class="menu-search-bar" placeholder="Search item..." style="width:100%; padding:10px; margin-bottom:10px;">
+                <div id="menu-list" class="menu-selection-list" style="max-height:200px; overflow-y:auto; border:1px solid #444; margin-bottom:10px;"></div>
+                
+                <div class="current-order-preview">
+                    <h4 style="color:white;">Current Selection:</h4>
+                    <div id="new-order-items-list" style="min-height:50px;">
+                        <p style="color:#aaa; font-style:italic;">No items selected.</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <label for="waiter-order-notes" style="display:block; margin-bottom:5px; font-weight:bold; color:#ccc;">Notes / Special Request:</label>
+                    <textarea id="waiter-order-notes" class="menu-search-bar" placeholder="e.g. No onions, Extra spicy..." rows="2" style="width:100%; resize: vertical; color: white; background:#333; border:1px solid #555;"></textarea>
+                </div>
+
+            </div>
+            <div class="waiter-popup-footer" style="margin-top:20px; text-align:right;">
+                <button class="btn-cancel-order" id="btn-cancel-modal" style="padding:10px 20px; background:#444; color:white; border:none; margin-right:10px;">Cancel</button>
+                <button class="btn-submit-order" id="btn-submit-modal" style="padding:10px 20px; background:#D4AF37; color:black; font-weight:bold; border:none;">Submit Order</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="hidden">
+        <div class="payment-box">
+            <div class="payment-header">
+                <h3 id="payment-title" style="margin:0; color:white; font-size:1.5rem;">Bill Summary</h3>
+                <button onclick="closePaymentModal()" style="background:none; border:none; color:#aaa; font-size:2rem; cursor:pointer;">&times;</button>
+            </div>
+            
+            <div class="payment-body">
+                <div id="payment-items-list">
+                    </div>
+                
+                <div class="pay-total-row">
+                    <span>Total Amount:</span>
+                    <span id="payment-total-display">0.00 €</span>
+                </div>
+            </div>
+
+            <div class="payment-footer">
+                <button class="btn-cancel-order" onclick="closePaymentModal()" style="flex:1; padding: 15px; background: #333; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform:uppercase;">
+                    Cancel
+                </button>
+                <button class="btn-submit-order" onclick="finalizePayment()" style="flex:1; padding: 15px; background: #006400; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 1.1rem; cursor: pointer; text-transform:uppercase;">
+                    ✅ Paid & Close
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="waiter-script.js?v=4"></script> 
+
+    <script>
+        // Use this function in your main waiter-script.js instead of showing the bill at the bottom
+        function openPaymentModal(tableId, totalAmount, itemsHtml) {
+            const modal = document.getElementById('payment-modal');
+            const title = document.getElementById('payment-title');
+            const list = document.getElementById('payment-items-list');
+            const total = document.getElementById('payment-total-display');
+
+            // Populate Data
+            title.innerText = "Rechnung: Tisch " + tableId; // "Bill: Table X"
+            total.innerText = totalAmount;
+            
+            // If you pass HTML for items, use it, otherwise simple text
+            if(itemsHtml) {
+                list.innerHTML = itemsHtml;
+            } else {
+                list.innerHTML = "<p style='color:#888; text-align:center;'>Details loading...</p>";
+            }
+
+            // Show Modal
+            modal.classList.remove('hidden');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
+
+        // Hook this to your actual Firebase logic
+        function finalizePayment() {
+            // Trigger your existing closeTable() logic here
+            // Then close the modal
+            closePaymentModal();
+            // Note: You might need to call your existing function like: completeTable(currentTableId);
+        }
+    </script>
+
+</body>
+</html>

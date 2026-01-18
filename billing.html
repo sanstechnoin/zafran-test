@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaffran Billing</title>
+    <link rel="stylesheet" href="style.css?v=33">
+    <link rel="icon" type="image/png" href="favlogo.png">
+</head>
+<body class="billing-body"> <header class="kitchen-header"> <div class="header-logo">
+            <img src="logo.png" alt="Zaffran Logo">
+            <h1>Billing Management</h1>
+            <span id="connection-icon">...</span>
+        </div>
+    </header>
+
+    <main class="billing-main">
+        <div id="billing-content-wrapper">
+            <div id="table-list-container">
+                <h2>Tables to Bill</h2>
+                <div id="table-list">
+                    <p>No open bills.</p>
+                </div>
+            </div>
+
+            <div id="bill-view-container" class="hidden">
+                <h2 class="bill-title">Bill for <span id="bill-table-number"></span></h2>
+                
+                <ul id="bill-item-list">
+                    </ul>
+                
+                <div class="bill-total">
+                    <strong>Total: <span id="bill-total-amount">0.00 €</span></strong>
+                </div>
+
+                <hr class="billing-hr">
+
+                <form id="add-item-form">
+                    <h3>Add Manual Item</h3>
+                    <div class="form-row">
+                        <label for="item-name">Item Name</label>
+                        <input type="text" id="item-name" required list="menu-items-list">
+                    </div>
+                    <div class="form-row form-row-small">
+                        <label for="item-qty">Qty</label>
+                        <input type="number" id="item-qty" value="1" required>
+                    </div>
+                    <div class="form-row form-row-small">
+                        <label for="item-price">Price (€)</label>
+                        <input type="number" id="item-price" step="0.01" required>
+                    </div>
+                    <button type="submit" id="add-item-btn">Add to Bill</button>
+                </form>
+
+                <hr class="billing-hr">
+
+                <button id="close-bill-btn">Close Bill (Finalize & Clear)</button>
+            </div>
+        </div>
+    </main>
+
+    <datalist id="menu-items-list">
+        </datalist>
+
+    <footer class="site-credit-footer">
+        <div class="footer-line-one">
+            <p class="footer-developer">
+                Created & Developed by <a href="https://sanstechno.in/" target="_blank" rel="noopener">Shri Avinash Narendhran S V</a> +49 162 3757839
+            </p>
+            <p class="footer-copyright">
+                &copy; Zaffran Delight, Euskirchen 2025
+            </p>
+        </div>
+   </footer>   
+
+    <div id="billing-login-overlay" class="kitchen-popup-overlay">
+        <div class="kitchen-popup-box">
+            <h3>Billing Login</h3>
+            <p>Please enter the management password.</p>
+            <input type="password" id="billing-password" placeholder="Password">
+            <p id="login-error" style="color: red; display: none;">Invalid Password</p>
+            <button id="login-button">Login</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="billing-script.js?v=1"></script>
+
+</body>
+</html>

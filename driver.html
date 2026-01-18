@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Driver App - Zafran</title>
+    <link rel="icon" href="favlogo.png" type="image/png">
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    
+    <style>
+        /* --- MOBILE DARK THEME --- */
+        body { 
+            background-color: #121212; 
+            color: #ffffff; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; 
+            padding: 0; 
+            padding-bottom: 90px; /* Space for floating button */
+        }
+        
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
+
+        /* HEADER */
+        .driver-header {
+            text-align: center; 
+            padding: 20px 0; 
+            border-bottom: 1px solid #333; 
+            margin-bottom: 20px;
+            background: #1a1a1a;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .app-logo { height: 50px; width: auto; display: block; margin: 0 auto 8px auto; }
+        .header-title { color: #D4AF37; margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ORDER CARD */
+        .order-card {
+            background: #1e1e1e; 
+            border: 1px solid #333; 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* Status Stripes */
+        .order-card.status-ready { border-left: 6px solid #4CAF50; } 
+        .order-card.status-preparing { border-left: 6px solid #FFC107; opacity: 0.9; }
+
+        /* 🚨 OVERDUE ALERT STYLE */
+        .order-card.status-overdue { 
+            border: 2px solid #D44437; 
+            background: rgba(212, 68, 55, 0.05); 
+            animation: pulse-red 2s infinite; 
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(212, 68, 55, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(212, 68, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 68, 55, 0); }
+        }
+
+        .overdue-badge {
+            background: #D44437; color: white; padding: 3px 8px; 
+            border-radius: 4px; font-weight: bold; font-size: 0.75rem;
+            display: inline-flex; align-items: center; gap: 4px; vertical-align: middle;
+            margin-left: 8px;
+        }
+
+        /* TEXT STYLES */
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .order-id { background: #333; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; color: #aaa; font-family: monospace; }
+        .order-time { font-weight: bold; color: #D4AF37; font-size: 1.1rem; }
+
+        .customer-name { font-size: 1.3rem; font-weight: bold; margin-bottom: 5px; color: #fff; }
+        .customer-address { font-size: 1.0rem; color: #ccc; line-height: 1.4; margin-bottom: 15px; display: flex; align-items: start; gap: 5px; }
+
+        /* IN-APP MAP CONTAINER */
+        .in-app-map-container {
+            height: 0;
+            width: 100%;
+            transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: #222;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .in-app-map-container.active {
+            height: 350px; /* Map height when open */
+            border: 2px solid #4285F4;
+        }
+        /* Hide Leaflet Routing Machine text box to save space */
+        .leaflet-routing-container { display: none !important; }
+
+        /* BUTTONS */
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        
+        .btn-action {
+            display: flex; align-items: center; justify-content: center;
+            padding: 12px; border-radius: 8px; text-decoration: none; 
+            font-weight: bold; font-size: 0.95rem; border: none; cursor: pointer; color: white;
+            transition: transform 0.1s;
+        }
+        .btn-action:active { transform: scale(0.97); }
+
+        .btn-nav { background: #4285F4; grid-column: span 2; font-size: 1.1rem; padding: 14px; }
+        .btn-google { background: #333; border: 1px solid #555; color: #ddd; }
+        .btn-call { background: #333; border: 1px solid #555; }
+        .btn-whatsapp { background: #25D366; }
+
+        .complete-btn {
+            width: 100%; padding: 16px; background: #4CAF50; color: white; font-size: 1.1rem;
+            font-weight: bold; border: none; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        
+        /* EMPTY STATE */
+        .empty-state { text-align: center; color: #666; margin-top: 80px; }
+
+        /* FLOATING EMERGENCY BUTTON */
+        .fab-restaurant {
+            position: fixed; bottom: 20px; right: 20px;
+            background-color: #D44437; color: white;
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            text-decoration: none; z-index: 999;
+            border: 2px solid #fff;
+        }
+        .fab-pulse { animation: pulse-white 2s infinite; }
+        @keyframes pulse-white { 0% { box-shadow: 0 0 0 0 rgba(212, 68, 55, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(212, 68, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 68, 55, 0); } }
+    </style>
+</head>
+<body>
+
+    <div class="driver-header">
+        <img src="logo.png" alt="Zafran" class="app-logo">
+        <h2 class="header-title">Driver Dashboard</h2>
+    </div>
+
+    <div class="container">
+        <div id="driver-orders">
+            <div class="empty-state">
+                <span class="material-icons" style="font-size: 64px; opacity:0.3;">local_shipping</span>
+                <p style="margin-top:10px;">Waiting for deliveries...</p>
+            </div>
+        </div>
+    </div>
+
+    <a href="tel:+4922511290950" class="fab-restaurant fab-pulse">
+        <span class="material-icons" style="font-size: 32px;">phone_in_talk</span>
+    </a>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script src="driver-script.js"></script> 
+</body>
+</html>

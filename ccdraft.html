@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract - SAN Technologies & Zafran Delight</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 9pt;
+            line-height: 1.4;
+            color: #222;
+            max-width: 210mm;
+            margin: 0 auto;
+            background: #f9f9f9;
+            padding: 20px;
+        }
+
+        .page-container {
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* GRID LAYOUT */
+        .contract-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 50% - 50% split */
+            border-bottom: 1px solid #ccc;
+            page-break-inside: avoid;
+        }
+
+        .contract-row:last-child {
+            border-bottom: none;
+        }
+
+        .col {
+            padding: 10px 15px;
+            vertical-align: top;
+        }
+
+        .col-de {
+            border-right: 1px solid #ccc;
+            background-color: #fff;
+        }
+
+        .col-en {
+            background-color: #fcfcfc;
+        }
+
+        /* TYPOGRAPHY */
+        h1 {
+            text-align: center;
+            font-size: 16pt;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .sub-header {
+            text-align: center;
+            font-size: 11pt;
+            color: #666;
+            margin-bottom: 35px;
+        }
+
+        h2 {
+            font-size: 10pt;
+            margin: 5px 0 10px 0;
+            color: #000;
+            text-transform: uppercase;
+            font-weight: 800;
+            text-decoration: underline;
+        }
+
+        h3 {
+            font-size: 9pt;
+            margin: 12px 0 4px 0;
+            font-weight: 700;
+            color: #444;
+        }
+
+        p {
+            margin: 0 0 8px 0;
+            text-align: justify;
+        }
+
+        ul {
+            padding-left: 15px;
+            margin: 0 0 8px 0;
+        }
+        
+        li {
+            margin-bottom: 4px;
+        }
+
+        /* SPECIAL BOXES */
+        .warning-box {
+            border: 2px solid #d9534f;
+            background-color: #fff5f5;
+            padding: 8px;
+            margin: 10px 0;
+            font-size: 8.5pt;
+            color: #c9302c;
+            font-weight: bold;
+        }
+
+        .price-box {
+            border: 2px solid #333;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            background: #eee;
+            margin: 10px 0;
+        }
+
+        /* PRINT BUTTON */
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+        
+        button {
+            background: #0056b3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        @media print {
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+            .page-container {
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print { display: none; }
+            .col-en { background-color: #fff; }
+            @page { margin: 1.5cm; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <button onclick="window.print()">🖨️ PRINT FINAL CONTRACT</button>
+    </div>
+
+    <div class="page-container">
+
+        <h1>Webdesign- & Servicevertrag</h1>
+        <div class="sub-header">Web Design & Service Agreement</div>
+
+        <div class="contract-row">
+            <div class="col col-de">
+                <strong>ZWISCHEN</strong><br><br>
+                <strong>Auftragnehmer:</strong><br>
+                SAN Technologies<br>
+                Inhaber: Avinash Vivekananthan<br>
+                Jahnstr. 10, 53879 Euskirchen<br>
+                *(im Folgenden „Entwickler“)*
+            </div>
+            <div class="col col-en">
+                <strong>BETWEEN</strong><br><br>
+                <strong>Contractor:</strong><br>
+                SAN Technologies<br>
+                Proprietor: Avinash Vivekananthan<br>
+                Jahnstr. 10, 53879 Euskirchen<br>
+                *(hereinafter referred to as the "Developer")*
+            </div>
+        </div>
+
+        <div class="contract-row">
+            <div class="col col-de">
+                <strong>UND</strong><br><br>
+                <strong>Auftraggeber:</strong><br>
+                Zafran Delight<br>
+                Inhaber: Herr Syed Hussain Haider Zaidi<br>
+                Kessenicher Str. 9, 53879 Euskirchen<br>
+                *(im Folgenden „Kunde“)*
+            </div>
+            <div class="col col-en">
+                <strong>AND</strong><br><br>
+                <strong>Client:</strong><br>
+                Zafran Delight<br>
+                Proprietor: Mr. Syed Hussain Haider Zaidi<br>
+                Kessenicher Str. 9, 53879 Euskirchen<br>
+                *(hereinafter referred to as the "Client")*
+            </div>
+        </div>
+
+        <div class="contract-row">
+            <div class="col col-de">
+                <h2>§ 1 Vertragsgegenstand</h2>
+                <p>Der Entwickler verpflichtet sich, die Softwarelösung <strong>„SAN Suite CORE“</strong> sowie ausgewählte Erweiterungsmodule für den Kunden unter der Domain <strong>zafraneuskirchen.de</strong> zu entwerfen, bereitzustellen, zu hosten und zu warten.</p>
+            </div>
+            <div class="col col-en">
+                <h2>§ 1 Subject of the Contract</h2>
+                <p>The Developer agrees to design, provide, host, and maintain the software solution <strong>"SAN Suite CORE"</strong> and selected expansion modules for the Client under the domain <strong>zafraneuskirchen.de</strong>.</p>
+            </div>
+        </div>
+
+        <div class="contract-row">
+            <div class="col col-de">
+                <h2>§ 2 Leistungsumfang & Module</h2>
+                
+                <h3>1. Basis-Software: „SAN Suite CORE“</h3>
+                <ul>
+                    <li><strong>Digitale Bestellerfassung:</strong> Erfassung von Bestellungen.</li>
+                    <li><strong>Digitale Speisekarte:</strong> Verwaltung von Kategorien, Artikeln und Allergenen.</li>
+                    <li><strong>Workflow-Steuerung:</strong> Weiterleitung an Küche/Theke.</li>
+                    <li><strong>WhatsApp-Benachrichtigungen:</strong> Integration (Link).</li>
+                </ul>
+
+                <div class="warning-box">
+                    ⚠️ RECHTLICHER HINWEIS:<br>
+                    SAN Suite CORE ist kein Kassensystem im rechtlichen Sinne und erfordert ein separates, gesetzeskonformes Kassensystem für Zahlungen. Das System dient ausschließlich der Bestellübermittlung.
+                </div>
+
+                <h3>2. Aktivierte Module (Erweiterungen)</h3>
+                <p>Folgende Module aus dem SAN-Ökosystem sind aktiviert:</p>
+                <ul>
+                    <li><strong>Dine-In QR Order:</strong> QR-Code-Bestellung am Tisch.</li>
+                    <li><strong>Kitchen Display (KDS):</strong> Monitor-Ansicht für die Küche.</li>
+                    <li><strong>Click & Collect:</strong> Online-Bestellung zur Abholung (Pickup).</li>
+                    <li><strong>Coupon-System:</strong> Verwaltung von Rabattaktionen.</li>
+                    <li><strong>Tischreservierung:</strong> Online-Buchungstool.</li>
+                </ul>
+
+                <h3>3. Verwaltete Administration</h3>
+                <ul>
+                    <li><strong>Inhaltspflege:</strong> Der Kunde beauftragt Änderungen (z. B. Preise) via WhatsApp oder E-Mail.</li>
+                    <li><strong>Inklusiv-Volumen:</strong> Bis zu <strong>2 Stunden</strong> Inhaltspflege pro Monat sind inklusive. Mehrarbeit wird zum Standard-Stundensatz berechnet.</li>
+                    <li><strong>Öffnungszeiten & Verfügbarkeit:</strong> Der Entwickler steuert die digitalen Öffnungszeiten. Der Kunde ist verpflichtet, Abweichungen (z. B. Feiertage, Ruhetage) mindestens <strong>24 Stunden im Voraus</strong> schriftlich mitzuteilen. Erfolgt keine rechtzeitige Meldung, haftet der Entwickler nicht für Fehlbuchungen.</li>
+                    <li><strong>Übersetzung:</strong> Der Kunde ist für die Bereitstellung von Texten in allen gewünschten Sprachen (DE/EN) verantwortlich.</li>
+                </ul>
+
+                <h3>4. IT-Services & SLA</h3>
+                <ul>
+                    <li><strong>Support:</strong> Remote (10:00 – 22:00 Uhr, Mo-So).</li>
+                    <li><strong>Reaktionszeit (Best Effort):</strong> Kritischer Ausfall < 24 Std., Sonstiges < 72 Std.</li>
+                    <li><strong>Ausschlüsse:</strong> Von den Reaktionszeiten ausgenommen sind Anfragen, die durch Fehlbedienung, Defekte an Dritt-Software/-Hardware oder fehlerhafte Inhalte des Kunden verursacht wurden.</li>
+                </ul>
+
+                <h3>5. Design-Freeze & Abnahme</h3>
+                <ul>
+                    <li><strong>Design-Freeze:</strong> Der Entwickler gewährt einen Zeitraum von 7 Tagen nach Unterschrift für finale Änderungen.</li>
+                    <li><strong>Abnahme:</strong> Das System gilt als automatisch abgenommen, wenn nicht innerhalb von 7 Tagen wesentliche Mängel schriftlich gemeldet werden. Nach der Abnahme sind funktionale Änderungen kostenpflichtig.</li>
+                </ul>
+
+                <h3>6. Projektstart & Bereitstellung</h3>
+                <ul>
+                <li><strong>Timeline:</strong>Der Entwickler beginnt mit der Konfiguration und der technischen Bereitstellung der Software unmittelbar nach Vertragsunterzeichnung und Erhalt der Einrichtungsgebühr. Die Vorbereitungsphase beträgt voraussichtlich 2 Wochen. Der offizielle Go-Live (Deployment) erfolgt nach Abschluss dieser Phase. Verzögerungen, die durch verspätete Zuarbeit des Kunden (z. B. fehlende Speisekarten-Daten oder Texte) entstehen, verlängern die Bereitstellungsphase entsprechend.</li>
+                </ul>
+            </div>
+            <div class="col col-en">
+                <h2>§ 2 Scope of Services & Modules</h2>
+                
+                <h3>1. Base Software: "SAN Suite CORE"</h3>
+                <ul>
+                    <li><strong>Digital Order Entry:</strong> Capture of incoming orders.</li>
+                    <li><strong>Digital Menu:</strong> Management of categories, items, and allergens.</li>
+                    <li><strong>Workflow Control:</strong> Routing to kitchen/counter.</li>
+                    <li><strong>WhatsApp Notifications:</strong> Integration (Link).</li>
+                </ul>
+
+                <div class="warning-box">
+                    ⚠️ LEGAL DISCLAIMER:<br>
+                    SAN Suite CORE is not a POS system in the legal sense and requires a separate, legally compliant POS system for payments. The system serves exclusively for order transmission.
+                </div>
+
+                <h3>2. Activated Modules (Extensions)</h3>
+                <p>The following modules from the SAN ecosystem are activated:</p>
+                <ul>
+                    <li><strong>Dine-In QR Order:</strong> QR-code ordering at the table.</li>
+                    <li><strong>Kitchen Display (KDS):</strong> Monitor view for the kitchen.</li>
+                    <li><strong>Click & Collect:</strong> Online ordering for pickup.</li>
+                    <li><strong>Coupon System:</strong> Management of discount campaigns.</li>
+                    <li><strong>Table Reservation:</strong> Online booking tool.</li>
+                </ul>
+
+                <h3>3. Managed Administration</h3>
+                <ul>
+                    <li><strong>Content Management:</strong> The Client requests changes (e.g., prices) via WhatsApp or email.</li>
+                    <li><strong>Volume:</strong> Up to <strong>2 hours</strong> per month included. Excess work is billed at the standard hourly rate.</li>
+                    <li><strong>Opening Hours & Availability:</strong> The Developer controls the digital opening hours. The Client is obliged to notify deviations (e.g., holidays, closed days) in writing at least <strong>24 hours in advance</strong>. The Developer is not liable for incorrect bookings if notification is late.</li>
+                    <li><strong>Translation:</strong> The Client is responsible for providing text in all desired languages (DE/EN).</li>
+                </ul>
+
+                <h3>4. IT Services & SLA</h3>
+                <ul>
+                    <li><strong>Support:</strong> Remote (10:00 – 22:00, Mon-Sun).</li>
+                    <li><strong>Response Time (Best Effort):</strong> Critical < 24 hrs, Minor < 72 hrs.</li>
+                    <li><strong>Exclusions:</strong> Excluded from response time calculations are requests caused by incorrect usage, defects in third-party software/hardware, or errors in Client-provided content.</li>
+                </ul>
+
+                <h3>5. Design Freeze & Acceptance</h3>
+                <ul>
+                    <li><strong>Design Freeze:</strong> The Developer grants a period of 7 days after signing for final modifications.</li>
+                    <li><strong>Acceptance:</strong> The system is deemed automatically accepted if no significant defects are reported in writing within 7 days. After acceptance, functional changes are billable.</li>
+                </ul>
+                <h3>6. Project Start & Deployment</h3>
+                <ul>
+                    <li><strong>Timeline:</strong> The Developer shall commence the configuration and technical setup of the software immediately following the signing of the contract and receipt of the setup fee. The estimated preparation phase is 2 weeks. Official go-live (deployment) will occur upon completion of this phase. Any delays caused by late contributions from the Client (e.g., missing menu data or translations) shall extend the preparation phase accordingly.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="contract-row">
+            <div class="col col-de">
+                <h2>§ 3 Nutzungsrechte & Eigentum</h2>
+                <p>1. <strong>Eigentum:</strong> Quellcode, Systemarchitektur und Design verbleiben im <strong>ausschließlichen geistigen Eigentum von SAN Technologies</strong>.</p>
+                <p>2. <strong>Lizenz:</strong> Der Kunde erhält ein einfaches, nicht übertragbares Nutzungsrecht für die Dauer des Vertrags.</p>
+                <p>3. <strong>Einschränkungen:</strong> Das Kopieren, Weiterverkaufen, Unterlizenzieren oder Verteilen des Quellcodes ist untersagt.</p>
+
+                <h2>§ 4 Haftungsausschluss</h2>
+                <p>1. <strong>Kein Kassensystem:</strong> Es wird ausdrücklich darauf hingewiesen, dass die Software keine TSE-konforme Kasse ist. Der Kunde ist allein verantwortlich für die ordnungsgemäße steuerliche Erfassung aller Einnahmen in einem separaten System.</p>
+                <p>2. <strong>Keine Zahlungsabwicklung:</strong> Das System wickelt keine Online-Zahlungen ab. Der Kunde ist allein verantwortlich für das Inkasso (Bar/Karte).</p>
+                
+                <p><strong>3. Hardware- & Systemanforderungen:</strong><br>
+                Der Kunde ist verantwortlich für die Bereitstellung geeigneter Hardware und einer stabilen Internetverbindung. 
+                <ul>
+                    <li><strong>Anzeige:</strong> Gerät mit grafischer Oberfläche (GUI) und modernem Browser (z. B. Chrome). Ein Touchscreen wird empfohlen.</li>
+                    <li><strong>Bestellgerät:</strong> Für die mobile Bestellaufnahme sind Tablets oder Smartphones erforderlich.</li>
+                    <li><strong>Internet:</strong> Eine permanente, stabile Internetverbindung ist zwingend erforderlich.</li>
+                </ul>
+                </p>
+
+                <p>4. <strong>Haftungsgrenze:</strong> Der Entwickler haftet nur für Vorsatz und grobe Fahrlässigkeit. Die Haftung ist auf die vom Kunden in den letzten 12 Monaten gezahlten Gebühren beschränkt.</p>
+            </div>
+            <div class="col col-en">
+                <h2>§ 3 Rights of Use & IP</h2>
+                <p>1. <strong>Ownership:</strong> The source code, system architecture, and design remain the <strong>exclusive intellectual property of SAN Technologies</strong>.</p>
+                <p>2. <strong>License:</strong> The Client is granted a simple, non-transferable right of use for the duration of the contract.</p>
+                <p>3. <strong>Restrictions:</strong> Copying, reselling, sublicensing, or distributing the source code is prohibited.</p>
+
+                <h2>§ 4 Disclaimer & Liability</h2>
+                <p>1. <strong>Not a POS System:</strong> It is expressly noted that the software is not a TSE-compliant cash register. The Client is solely responsible for proper tax recording of all revenue in a separate system.</p>
+                <p>2. <strong>No Payments:</strong> The system does not process online payments. The Client is solely responsible for collecting payments (Cash/Card).</p>
+                
+                <p><strong>3. Hardware & System Requirements:</strong><br>
+                The Client is responsible for providing suitable hardware and a stable internet connection.
+                <ul>
+                    <li><strong>Display:</strong> Device with graphical user interface (GUI) and modern browser (e.g., Chrome). Touchscreen is recommended.</li>
+                    <li><strong>Ordering Device:</strong> Tablets or Smartphones are required for mobile order taking.</li>
+                    <li><strong>Internet:</strong> A permanent, stable internet connection is mandatory.</li>
+                </ul>
+                </p>
+
+                <p>4. <strong>Liability Cap:</strong> The Developer is liable only for intent and gross negligence. Liability is limited to the fees paid by the Client in the last 12 months.</p>
+            </div>
+        </div>
+
+        <div class="contract-row">
+            <div class="col col-de">
+                <h2>§ 5 Vergütung & Zahlung</h2>
+                
+                <h3>1. Einmalige Einrichtungsgebühren</h3>
+                <ul>
+                    <li>SAN Suite CORE: € 850,00</li>
+                    <li>Module (Pickup, KDS, Dine-In): € 650,00</li>
+                    <li>Reservierungs-Modul: € 300,00</li>
+                    <li><strong>Gesamtwert (Standard): € 1.800,00</strong></li>
+                </ul>
+                <p><strong>Beta-Partner Rabatt: – € 1.201,00</strong></p>
+                
+                <div class="price-box">
+                    FINALE EINRICHTUNGSGEBÜHR: € 599,00<br>
+                    <span style="font-weight:normal; font-size:10px;">(Fällig sofort bei Vertragsunterzeichnung)</span>
+                </div>
+
+                <h3>2. Monatliche Service-Pauschale</h3>
+                <p><strong>€ 60,00 pro Monat</strong>, fällig am 1. eines jeden Monats.</p>
+
+                <h3>3. Zusatzkosten & Stundensätze</h3>
+                <ul>
+                    <li><strong>Hosting:</strong> Zu Selbstkosten (ca. € 20–30/Jahr).</li>
+                    <li><strong>Stundensatz:</strong> € 80,00 (Abrechnung in 30-Minuten-Blöcken).</li>
+                    <li><strong>Anfahrtskosten (ab Euskirchen):</strong> Zone 1 (<15 km): € 20 / Zone 2 (15–50 km): € 45 / Zone 3 (50–100 km): € 90 / Zone 4 (100–150 km): € 140.</li>
+                </ul>
+
+                <h3>4. Zahlungsbedingungen</h3>
+                <p>Rechnungen sind zahlbar innerhalb von 14 Tagen. Bei Verzug fallen gesetzliche Verzugszinsen sowie eine Mahngebühr von € 40,00 an. Bei Zahlungsrückstand von mehr als 30 Tagen können die Leistungen ausgesetzt werden.</p>
+            </div>
+            <div class="col col-en">
+                <h2>§ 5 Compensation & Payment</h2>
+                
+                <h3>1. One-Time Setup Fees</h3>
+                <ul>
+                    <li>SAN Suite CORE: € 850.00</li>
+                    <li>Modules (Pickup, KDS, Dine-In): € 650.00</li>
+                    <li>Reservation Module: € 300.00</li>
+                    <li><strong>Total Standard Value: € 1,800.00</strong></li>
+                </ul>
+                <p><strong>Beta Partner Discount: – € 1,201.00</strong></p>
+                
+                <div class="price-box">
+                    FINAL SETUP FEE: € 599.00<br>
+                    <span style="font-weight:normal; font-size:10px;">(Due immediately upon signing)</span>
+                </div>
+
+                <h3>2. Monthly Service Fee</h3>
+                <p><strong>€ 60.00 per month</strong>, due on the 1st of each month.</p>
+
+                <h3>3. Additional Costs & Hourly Rates</h3>
+                <ul>
+                    <li><strong>Hosting:</strong> At cost (approx. € 20–30/year).</li>
+                    <li><strong>Hourly Rate:</strong> € 80.00 (billed in 30-minute blocks).</li>
+                    <li><strong>Travel Costs (from Euskirchen):</strong> Zone 1 (<15 km): € 20 / Zone 2 (15–50 km): € 45 / Zone 3 (50–100 km): € 90 / Zone 4 (100–150 km): € 140.</li>
+                </ul>
+
+                <h3>4. Payment Terms</h3>
+                <p>Invoices are payable within 14 days. In case of default, statutory default interest plus a € 40.00 dunning fee applies. Services may be suspended if payment is more than 30 days overdue.</p>
+            </div>
+        </div>
+
+        <div class="contract-row">
+            <div class="col col-de">
+                <h2>§ 6 Optionale Add-ons</h2>
+                <p>Die folgenden Leistungen sind nicht im Paket enthalten, können aber hinzugebucht werden:</p>
+                <ul>
+                    <li><strong>Delivery-Modul (Standard):</strong> € 200,00 (einmalig).</li>
+                    <li><strong>Delivery-Modul PRO (Tracking):</strong> € 400,00 (einmalig).</li>
+                    <li><strong>Hardware-Konfiguration:</strong> € 250,00 (Einrichtung von bis zu 5 Geräten).</li>
+                    <li><strong>Flyer-Design:</strong> € 150,00 (1 große + 3 kleine Korrekturrunden).</li>
+                </ul>
+            </div>
+            <div class="col col-en">
+                <h2>§ 6 Optional Add-ons</h2>
+                <p>The following services are not included but can be booked additionally:</p>
+                <ul>
+                    <li><strong>Delivery Module (Standard):</strong> € 200.00 (one-time).</li>
+                    <li><strong>Delivery Module PRO (Tracking):</strong> € 400.00 (one-time).</li>
+                    <li><strong>Hardware Configuration:</strong> € 250.00 (Setup of up to 5 devices).</li>
+                    <li><strong>Flyer Design:</strong> € 150.00 (1 major + 3 minor revisions).</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="contract-row">
+            <div class="col col-de">
+                <h2>§ 7 Laufzeit & Kündigung</h2>
+                <p>1. <strong>Laufzeit:</strong> Die Mindestlaufzeit für die monatliche Service-Pauschale beträgt <strong>24 Monate</strong>. Der Vertrag verlängert sich automatisch um jeweils 12 Monate, sofern er nicht mit einer Frist von <strong>3 Monaten</strong> zum Laufzeitende schriftlich gekündigt wird.</p>
+                <p>2. <strong>Außerordentliche Kündigung:</strong> Beide Parteien haben das Recht, diesen Vertrag aus wichtigem Grund (z. B. anhaltender Zahlungsverzug, Vertrauensbruch) mit sofortiger Wirkung zu kündigen.</p>
+                
+                <p>3. <strong>Sonderkündigungsrecht bei Geschäftsaufgabe:</strong> Sollte der Kunde seinen Geschäftsbetrieb dauerhaft einstellen (nachzuweisen durch Gewerbeabmeldung), hat er das Recht, den Vertrag mit einer Frist von <strong>3 Monaten</strong> zum Monatsende vorzeitig zu kündigen.</p>
+
+                <p>4. <strong>Einstellung des Dienstes:</strong> Der Entwickler behält sich das Recht vor, den Vertrag mit einer Frist von <strong>3 Monaten</strong> zu kündigen, sofern der Betrieb von „SAN Suite CORE“ eingestellt oder die Geschäftstätigkeit des Entwicklers beendet wird.</p>
+
+                <p>5. <strong>Folgen:</strong> Mit Vertragsende werden alle Leistungen eingestellt und die Webseite offline genommen.</p>
+            </div>
+            <div class="col col-en">
+                <h2>§ 7 Term & Termination</h2>
+                <p>1. <strong>Term:</strong> The minimum term for the Monthly Service Fee is <strong>24 months</strong>. The contract automatically renews for 12 months unless terminated in writing with a notice period of <strong>3 months</strong> to the end of the term.</p>
+                <p>2. <strong>Extraordinary Termination:</strong> Both parties reserve the right to terminate this contract for good cause (e.g., persistent non-payment, breach of trust) with immediate effect.</p>
+
+                <p>3. <strong>Special Termination (Business Closure):</strong> If the Client permanently ceases business operations (proven by trade deregistration), they may terminate the contract early with <strong>3 months'</strong> notice to the end of the month.</p>
+
+                <p>4. <strong>Discontinuation of Service:</strong> The Developer reserves the right to terminate the contract with <strong>3 months'</strong> notice if the operation of "SAN Suite CORE" is discontinued or the Developer's business activity ceases.</p>
+
+                <p>5. <strong>Consequences:</strong> Upon termination, all services will be discontinued and the website taken offline.</p>
+            </div>
+        </div>
+
+        <div class="contract-row">
+            <div class="col col-de">
+                <h2>§ 8 Schlussbestimmungen</h2>
+                <p>1. <strong>Marketing:</strong> SAN Technologies darf den Kunden als Referenz nennen.</p>
+                <p>2. <strong>Vertraulichkeit:</strong> Der Kunde verpflichtet sich, die „Beta-Partner“-Preiskonditionen vertraulich zu behandeln.</p>
+                <p>3. <strong>Schriftform:</strong> Änderungen und Ergänzungen dieses Vertrags bedürfen der Schriftform. Mündliche Nebenabreden sind ungültig.</p>
+                <p>4. <strong>Salvatorische Klausel:</strong> Sollten einzelne Bestimmungen dieses Vertrags unwirksam sein, so bleibt die Wirksamkeit der übrigen Bestimmungen hiervon unberührt.</p>
+                <p>5. <strong>Gerichtsstand:</strong> Euskirchen, Deutschland.</p>
+            </div>
+            <div class="col col-en">
+                <h2>§ 8 Final Provisions</h2>
+                <p>1. <strong>Marketing:</strong> SAN Technologies may name the Client as a reference.</p>
+                <p>2. <strong>Confidentiality:</strong> The Client agrees to keep the "Beta Partner" pricing terms confidential.</p>
+                <p>3. <strong>Written Form:</strong> Amendments and additions to this contract must be made in writing. Verbal collateral agreements are invalid.</p>
+                <p>4. <strong>Severability:</strong> Should individual provisions of this contract be invalid, the remaining provisions shall remain in full force and effect.</p>
+                <p>5. <strong>Jurisdiction:</strong> Euskirchen, Germany.</p>
+            </div>
+        </div>
+
+        <div class="contract-row" style="border-bottom:none; margin-top:20px;">
+            <div class="col col-de" style="border-right:none; padding-top:20px;">
+                <p><strong>Ort, Datum:</strong> ________________________</p>
+                <br><br><br><br>
+                ___________________________________<br>
+                <strong>SAN Technologies</strong><br>
+                (Avinash Vivekananthan)
+            </div>
+            
+            <div class="col col-en" style="background-color: #fff; padding-top:20px;">
+                <p><strong>Place, Date:</strong> ________________________</p>
+                <br><br><br><br>
+                ___________________________________<br>
+                <strong>Zafran Delight</strong><br>
+                (Syed Hussain Haider Zaidi)
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

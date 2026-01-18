@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tisch auswählen - Zaffran Delight</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="style.css?v=33">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        /* --- Styles matched to index.html layout --- */
+        header { 
+            position: fixed; 
+            width: 100%; 
+            top: 0; 
+            z-index: 1000; 
+            background: rgba(42, 42, 42, 0.95);
+            border-bottom: 1px solid var(--gold); 
+            padding: 10px 0; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); 
+        }
+
+        /* Container to constrain width - Keeps logo/link from being too far apart */
+        .container { 
+            width: 100%; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 0 20px; 
+            box-sizing: border-box;
+        }
+
+        .navbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+
+        .logo img { 
+            height: 50px; 
+            display: block; 
+            width: auto;
+        }
+
+        .header-link {
+            color: var(--gold);
+            font-weight: 600;
+            text-transform: uppercase;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+        .header-link:hover { color: #fff; }
+
+        /* Adjust main content top margin because header is fixed */
+        .table-selection-main {
+            margin-top: 80px; 
+        }
+        
+        footer {
+            background-color: #000;
+            color: #aaa;
+            padding: 40px 20px;
+            font-size: 0.8rem;
+            border-top: 1px solid #333;
+            margin-top: auto;
+            text-align: center;
+        }
+        .footer-links a { color: var(--gold); text-decoration: none; margin: 0 10px; }
+        .footer-links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <div class="container navbar">
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Zaffran Logo">
+            </a>
+            <a href="index.html" class="header-link">Startseite</a>
+        </div>
+    </header>
+
+    <main class="table-selection-main">
+        <h2 style="text-align: center;">Bitte wählen Sie Ihre Tischnummer</h2>
+        
+        <div class="table-circle-container">
+            <div class="table-circle">
+                <a href="dine-in-menu.html?table=4" class="table-btn selected" style="--angle: 30deg;">4</a>
+                <a href="dine-in-menu.html?table=5" class="table-btn" style="--angle: 60deg;">5</a>
+                <a href="dine-in-menu.html?table=6" class="table-btn selected" style="--angle: 90deg;">6</a>
+                <a href="dine-in-menu.html?table=7" class="table-btn" style="--angle: 120deg;">7</a>
+                <a href="dine-in-menu.html?table=8" class="table-btn selected" style="--angle: 150deg;">8</a>
+                <a href="dine-in-menu.html?table=9" class="table-btn" style="--angle: 180deg;">9</a>
+                <a href="dine-in-menu.html?table=10" class="table-btn selected" style="--angle: 210deg;">10</a>
+                <a href="dine-in-menu.html?table=11" class="table-btn" style="--angle: 240deg;">11</a>
+                <a href="dine-in-menu.html?table=12" class="table-btn selected" style="--angle: 270deg;">12</a>
+                <a href="dine-in-menu.html?table=1" class="table-btn" style="--angle: 300deg;">1</a>
+                <a href="dine-in-menu.html?table=2" class="table-btn selected" style="--angle: 330deg;">2</a>
+                <a href="dine-in-menu.html?table=3" class="table-btn" style="--angle: 0deg;">3</a> 
+                
+                <img src="clock.png" alt="Food" class="center-food-image">
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div style="max-width: 800px; margin: 0 auto; margin-bottom: 20px; line-height: 1.4;">
+            <p><strong>Zusatzstoffe:</strong> 1) mit Farbstoffen 2) Schwärzungsmittel 3) mit Konservierungsstoffen 4) Schwefeloxid 5) mit Phosphat 6) mit Antioxidationsmittel 7) mit Geschmacksverstärkern 8) gewachst 9) mit Süßungsmittel 10) mit Zuckerart(en) 11) enthält eine Phenylalaninquelle 12) kann bei übermäßigem Verzehr abführend wirken 13) chininhaltig 14) koffeinhaltig 15) Stärke 16) Eiklar 17) Sojaeiweiß 18) mit Milcheweiß</p>
+            <p><strong>Allergene:</strong> A) enthält Weizen B) enthält Krebstiere C) enthält Eier D) enthält Fisch E) enthält Erdnüsse F) enthält Soja G) enthält Milch/Laktose H) enthält Pistazien I) enthält Sellerie J) enthält Senf K) enthält Sesamsamen I) enthält Schwefeldioxid und Sulfite M) enthält Lupine N) enthält Weichtiere und Weichtiererzeugnisse</p>
+            <p>Alle Preise inkl. MwSt.. Änderungen, Irrtümer, Druckfehler vorbehalten.</p>
+        </div>
+
+        <div class="footer-links" style="border-top: 1px solid #333; padding-top: 20px;">
+            <p style="margin-bottom: 10px;">
+                <a href="imprint.html" target="_blank">Impressum</a> | 
+                <a href="privacy.html" target="_blank">Datenschutzerklärung</a>
+            </p>
+            <p>&copy; 2025 Zafran Delight. Created by <a href="https://santechnologies.de/" target="_blank" rel="noopener noreferrer" style="color: #888; text-decoration: none; font-weight: bold;">SAN Technologies</a>
+        </div>
+    </footer>
+    <div id="cookie-banner" style="position:fixed; bottom:0; left:0; width:100%; background:#111; color:white; padding:20px; border-top:2px solid #D4AF37; z-index:10000; display:none; box-shadow: 0 -5px 20px rgba(0,0,0,0.8);">
+    <div style="max-width: 1200px; margin: 0 auto; display:flex; flex-direction:column; gap:15px; align-items:center; text-align:center;">
+        
+        <h3 style="margin:0; color:#D4AF37;">🍪 Datenschutzeinstellungen</h3>
+        <p style="font-size:0.9rem; color:#ccc; margin:0;">
+            Wir nutzen Cookies und externe Dienste (Google Fonts, Firebase, OpenStreetMap), um unsere Website zu betreiben. 
+            Einige sind technisch notwendig, andere helfen uns, unser Angebot zu verbessern.
+            <br>
+            <a href="privacy.html" style="color:#fff; text-decoration:underline;">Mehr erfahren</a> | 
+            <a href="imprint.html" style="color:#fff; text-decoration:underline;">Impressum</a>
+        </p>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button onclick="acceptAllCookies()" style="background:#D4AF37; color:black; border:none; padding:10px 25px; border-radius:5px; font-weight:bold; cursor:pointer;">Alle Akzeptieren</button>
+            <button onclick="acceptEssentialCookies()" style="background:#333; color:white; border:1px solid #666; padding:10px 25px; border-radius:5px; cursor:pointer;">Nur Notwendige</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Check if user already decided
+    if (!localStorage.getItem('cookieConsent')) {
+        document.getElementById('cookie-banner').style.display = 'block';
+    }
+
+    function acceptAllCookies() {
+        localStorage.setItem('cookieConsent', 'all');
+        document.getElementById('cookie-banner').style.display = 'none';
+        // Only load map if the function exists (prevents errors on other pages)
+        if (typeof loadMap === 'function') {
+        loadMap();
+        }
+    }
+
+    function acceptEssentialCookies() {
+        localStorage.setItem('cookieConsent', 'essential');
+        document.getElementById('cookie-banner').style.display = 'none';
+    }
+</script>
+</body>
+</html>

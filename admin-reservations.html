@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation Manager - Zafran</title>
+    <link rel="icon" type="image/png" href="favlogo.png">
+    <style>
+        /* --- KDS THEME VARIABLES --- */
+        :root {
+            --bg-dark: #1a1a1a;       
+            --card-bg: #2a2a2a;      
+            --gold: #D4AF37;
+            --text-main: #f0f0f0;
+            --text-subtle: #aaa;
+            --border-color: #444;
+            --danger-red: #dc3545;
+            --success-green: #28a745;
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            padding: 20px; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex; flex-direction: column; min-height: 100vh; margin: 0; box-sizing: border-box;
+        }
+        
+        .admin-container { 
+            max-width: 1100px; width: 100%; margin: 0 auto 30px auto; 
+            background: var(--card-bg); padding: 30px; border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid var(--border-color);
+        }
+
+        .header-logo { display: block; height: 60px; margin: 0 auto 10px auto; }
+        
+        h2 { 
+            border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px; 
+            color: var(--gold); text-align: center; text-transform: uppercase; font-size: 1.4rem;
+        }
+
+        /* FILTERS */
+        .filter-bar {
+            display: flex; gap: 15px; margin-bottom: 20px; align-items: center; background: #111; padding: 15px; border-radius: 6px; border: 1px solid #333;
+        }
+        .filter-bar label { font-weight: bold; color: var(--gold); margin-right: 5px; }
+        .filter-bar input, .filter-bar select {
+            padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: white;
+        }
+        .filter-bar button {
+            padding: 8px 15px; background: var(--gold); color: black; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: auto;
+        }
+        .filter-bar button:hover { background: white; }
+
+        /* TABLE STYLES */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.95rem; background: #222; border-radius: 4px; overflow: hidden; }
+        th { background-color: #111; color: var(--gold); padding: 12px; text-align: left; font-size: 0.9rem; border-bottom: 2px solid var(--border-color); }
+        td { padding: 12px; border-bottom: 1px solid #333; vertical-align: middle; color: #ddd; }
+        tr:hover { background-color: #2f2f2f; }
+
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        .status-confirmed { background: rgba(40, 167, 69, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+        .status-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid #ffc107; }
+        .status-cancelled { background: rgba(220, 53, 69, 0.2); color: #ff6b6b; border: 1px solid #ff6b6b; }
+
+        /* ACTION BUTTONS */
+        .btn-action {
+            border: none; width: 32px; height: 32px; border-radius: 4px; 
+            cursor: pointer; font-weight: bold; margin-left: 5px; display: inline-flex; 
+            align-items: center; justify-content: center; font-size: 1.1rem;
+        }
+        .btn-accept { background-color: var(--success-green); color: white; }
+        .btn-accept:hover { background-color: #218838; }
+        
+        .btn-delete { background-color: var(--danger-red); color: white; }
+        .btn-delete:hover { background-color: #c82333; }
+
+        /* LOGIN OVERLAY */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark); z-index: 10000;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .login-box {
+            background: var(--card-bg); padding: 40px; border-radius: 8px;
+            border: 2px solid var(--gold); text-align: center; width: 90%; max-width: 400px;
+        }
+        .login-box img { height: 80px; margin-bottom: 20px; }
+        .login-box input { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #444; background: #111; color: white; text-align: center;}
+        .login-box button { width: 100%; padding: 10px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; }
+
+        footer { margin-top: auto; text-align: center; padding: 15px; color: #666; font-size: 0.8rem; border-top: 1px solid #333; }
+    </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <div class="login-box">
+        <img src="logo.png" alt="Zafran">
+        <h3 style="color:var(--gold); margin-bottom:20px;">RESERVATION ADMIN</h3>
+        <form id="login-form">
+            <input type="password" id="admin-password" placeholder="Passwort eingeben" required>
+            <button type="submit">Einloggen</button>
+            <p id="login-error" style="color:red; margin-top:10px; font-size:0.9rem;"></p>
+        </form>
+    </div>
+</div>
+
+<div id="admin-content" style="display:none;">
+    <div class="admin-container">
+        <img src="logo.png" alt="Zafran Logo" class="header-logo">
+        <h2>Tisch Reservierungen</h2>
+        
+        <div class="filter-bar">
+            <div>
+                <label>Datum:</label>
+                <input type="date" id="filter-date">
+            </div>
+            <div>
+                <label>Status:</label>
+                <select id="filter-status">
+                    <option value="all">Alle</option>
+                    <option value="pending">Ausstehend</option>
+                    <option value="confirmed">Bestätigt</option>
+                    <option value="cancelled">Storniert</option>
+                </select>
+            </div>
+            <button onclick="loadReservations()">Aktualisieren ↻</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table id="res-table">
+                <thead>
+                    <tr>
+                        <th>Zeit</th>
+                        <th>Name</th>
+                        <th>Gäste</th>
+                        <th>Telefon</th>
+                        <th>Notiz</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Aktion</th>
+                    </tr>
+                </thead>
+                <tbody id="res-body">
+                    <tr><td colspan="7" style="text-align:center;">Lade Daten...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="margin-top: 15px; text-align: right; color: var(--gold); font-weight: bold;">
+            Total Gäste heute: <span id="total-guests-count">0</span>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Zafran Delight. Reservation Management System.</p>
+    </footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+<script>
+    // --- 1. CONFIG ---
+    const ADMIN_PASSWORD = "zafran2025"; 
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyAVh2kVIuFcrt8Dg88emuEd9CQlqjJxDrA",
+      authDomain: "zaffran-delight.firebaseapp.com",
+      projectId: "zaffran-delight",
+      storageBucket: "zaffran-delight.firebasestorage.app",
+      messagingSenderId: "1022960860126",
+      appId: "1:1022960860126:web:1e06693dea1d0247a0bb4f"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- 2. LOGIN LOGIC ---
+    document.addEventListener("DOMContentLoaded", () => {
+        // Set Default Date to Today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('filter-date').value = today;
+
+        if(sessionStorage.getItem('zafran_res_admin_logged_in') === 'true') {
+            showAdminContent();
+        }
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('admin-password').value;
+            if(input === ADMIN_PASSWORD) {
+                sessionStorage.setItem('zafran_res_admin_logged_in', 'true');
+                showAdminContent();
+            } else {
+                document.getElementById('login-error').textContent = "Falsches Passwort!";
+            }
+        });
+        
+        // Listen for filter changes
+        document.getElementById('filter-date').addEventListener('change', loadReservations);
+        document.getElementById('filter-status').addEventListener('change', loadReservations);
+    });
+
+    function showAdminContent() {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('admin-content').style.display = 'block';
+        loadReservations();
+    }
+
+    // --- 3. LOAD DATA ---
+    function loadReservations() {
+        const dateFilter = document.getElementById('filter-date').value;
+        const statusFilter = document.getElementById('filter-status').value;
+        const tableBody = document.getElementById('res-body');
+        const totalCountEl = document.getElementById('total-guests-count');
+
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Lade...</td></tr>';
+
+        let query = db.collection("reservations").where("date", "==", dateFilter);
+        
+        if(statusFilter !== 'all') {
+            query = query.where("status", "==", statusFilter);
+        }
+
+        query.get().then((snapshot) => {
+            tableBody.innerHTML = "";
+            let totalGuests = 0;
+            let reservations = [];
+
+            snapshot.forEach(doc => {
+                reservations.push({ id: doc.id, ...doc.data() });
+            });
+
+            // Sort by Time
+            reservations.sort((a, b) => a.time.localeCompare(b.time));
+
+            if (reservations.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#666;">Keine Reservierungen für dieses Datum gefunden.</td></tr>';
+                totalCountEl.innerText = "0";
+                return;
+            }
+
+            reservations.forEach(res => {
+                // Calculate Guests
+                let g = parseInt(res.guests);
+                if(isNaN(g)) g = 0; 
+                if(res.status === 'confirmed') totalGuests += g;
+
+                // Determine Status Badge Color
+                let statusClass = 'status-pending';
+                let statusText = res.status;
+                if(res.status === 'confirmed') { statusClass = 'status-confirmed'; statusText = 'Bestätigt'; }
+                else if(res.status === 'cancelled') { statusClass = 'status-cancelled'; statusText = 'Storniert'; }
+                else if(res.status === 'pending') { statusClass = 'status-pending'; statusText = 'Ausstehend'; }
+
+                // Actions Column HTML
+                let actionsHtml = `
+                    <button class="btn-action btn-delete" onclick="deleteReservation('${res.id}', '${res.name}')" title="Löschen">✕</button>
+                `;
+                
+                // If Pending, show Accept Button
+                if(res.status === 'pending') {
+                    // Pass email (if exists) to the confirm function
+                    const email = res.email ? res.email : '';
+                    actionsHtml = `
+                        <button class="btn-action btn-accept" onclick="confirmReservation('${res.id}', '${email}', '${res.name}', '${res.date}', '${res.time}', '${res.guests}')" title="Akzeptieren & Email senden">✔</button>
+                        ${actionsHtml}
+                    `;
+                }
+
+                const row = `
+                    <tr style="${res.status === 'cancelled' ? 'opacity:0.5;' : ''}">
+                        <td style="font-weight:bold; color:var(--gold); font-size:1.1rem;">${res.time}</td>
+                        <td>${res.name}</td>
+                        <td style="font-weight:bold; text-align:center;">${res.guests}</td>
+                        <td><a href="tel:${res.phone}" style="color:#aaa;text-decoration:none;">${res.phone}</a></td>
+                        <td style="color:#aaa; font-style:italic; font-size:0.85rem;">${res.notes || "-"}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td style="text-align: right; white-space:nowrap;">
+                            ${actionsHtml}
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+
+            totalCountEl.innerText = totalGuests;
+
+        }).catch(error => {
+            console.error("Error loading reservations:", error);
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Fehler beim Laden.</td></tr>';
+        });
+    }
+
+    // --- 4. ACTIONS ---
+
+    // CONFIRM RESERVATION
+    window.confirmReservation = function(id, email, name, date, time, guests) {
+        if(!confirm(`Reservierung für ${name} bestätigen?`)) return;
+
+        // 1. Update Firebase
+        db.collection("reservations").doc(id).update({
+            status: "confirmed"
+        }).then(() => {
+            loadReservations(); // Refresh UI
+            
+            // 2. Open Email Client (if email exists)
+            if(email && email !== 'undefined' && email.trim() !== '') {
+                const subject = encodeURIComponent("Bestätigung Ihrer Reservierung - Zafran Delight");
+                const body = encodeURIComponent(
+`Hallo ${name},
+
+Vielen Dank für Ihre Reservierung bei Zafran Delight.
+Wir bestätigen hiermit Ihren Tisch:
+
+Datum: ${date}
+Uhrzeit: ${time} Uhr
+Personen: ${guests}
+
+Wir freuen uns auf Ihren Besuch!
+
+Mit freundlichen Grüßen,
+Ihr Zafran Delight Team
+Kessenicher Straße 9, 53879 Euskirchen`
+                );
+                
+                // Open Mail App
+                window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+            } else {
+                alert("Reservierung bestätigt! (Keine E-Mail Adresse vorhanden)");
+            }
+
+        }).catch(err => alert("Fehler: " + err.message));
+    };
+
+    // DELETE RESERVATION
+    window.deleteReservation = function(id, name) {
+        if(confirm(`Möchten Sie die Reservierung von "${name}" wirklich löschen?`)) {
+            db.collection("reservations").doc(id).delete()
+            .then(() => {
+                loadReservations(); 
+            })
+            .catch(err => alert("Fehler: " + err.message));
+        }
+    };
+
+</script>
+
+</body>
+</html>

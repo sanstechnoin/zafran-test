@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Zafran Delight - Physical Card Print Design</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap');
+
+        body {
+            background-color: #f0f0f0;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            gap: 40px;
+        }
+
+        /* CARD CONTAINER (Standard 3.5 x 2 inches Aspect Ratio) */
+        .card {
+            width: 525px; /* Scaled up for screen viewing */
+            height: 300px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            background: white;
+            display: flex;
+        }
+
+        /* --- FRONT SIDE DESIGN --- */
+        .front {
+            background: #ffffff;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 25px 35px;
+            box-sizing: border-box;
+            border-bottom: 8px solid #D4AF37; /* Saffron Gold Strip */
+        }
+
+        .header {
+            text-align: left;
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 38px;
+            color: #111;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .tagline {
+            color: #D4AF37; /* Gold */
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .person-details {
+            margin-top: 15px;
+        }
+
+        .name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        .role {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 11px;
+            color: #333;
+            margin-top: auto;
+            margin-bottom: 10px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon {
+            color: #D4AF37;
+            font-size: 14px;
+        }
+
+        /* --- BACK SIDE DESIGN --- */
+        .back {
+            background: #111111; /* Deep Black */
+            color: white;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        /* Split Layout for Back */
+        .split-section {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .split-section:first-child {
+            border-right: 1px solid #333; /* Divider */
+        }
+
+        .qr-box {
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        /* Placeholder for QR Code Image */
+        .qr-placeholder {
+            width: 100px;
+            height: 100px;
+            background-color: #eee;
+            background-image: url('https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Example');
+            background-size: cover;
+        }
+
+        .qr-title {
+            font-family: 'Playfair Display', serif;
+            color: #D4AF37;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .qr-desc {
+            font-size: 10px;
+            color: #bbb;
+            text-align: center;
+            line-height: 1.4;
+            max-width: 180px;
+        }
+
+        /* Label for visualization */
+        .label {
+            margin-top: -30px;
+            margin-bottom: 10px;
+            color: #666;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="label">Front Side</div>
+    <div class="card front">
+        <div class="header">
+            <h1 class="logo-text">Zafran Delight</h1>
+            <div class="tagline">Authentic Indian & Pakistani Cuisine</div>
+            
+            <div class="person-details">
+                <div class="name">Syed Hussain Haider Zaidi</div>
+                <div class="role">Owner & Chef (35 Years Exp.)</div>
+            </div>
+        </div>
+
+        <div class="contact-grid">
+            <div class="contact-item">
+                <span class="icon">📍</span> Kessenicher Str. 9, Euskirchen
+            </div>
+            <div class="contact-item">
+                <span class="icon">✉️</span> delightzafran@gmail.com
+            </div>
+            <div class="contact-item">
+                <span class="icon">📞</span> 02251 1290950
+            </div>
+            <div class="contact-item">
+                <span class="icon">📱</span> +49 2251 9599741 (WhatsApp)
+            </div>
+        </div>
+    </div>
+
+    <div class="label">Back Side</div>
+    <div class="card back">
+        <div class="split-section">
+            <div class="qr-title">Save Contact</div>
+            <div class="qr-box">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=VCARD-GOES-HERE" alt="Contact QR" style="width:100px; height:100px;">
+            </div>
+            <div class="qr-desc">Scan to save my details<br>& view digital card</div>
+        </div>
+
+        <div class="split-section">
+            <div class="qr-title">Book Catering</div>
+            <div class="qr-box">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://zafraneuskirchen.de" alt="Catering QR" style="width:100px; height:100px;">
+            </div>
+            <div class="qr-desc">Plan your Event or Wedding<br>with Chef Zaidi</div>
+        </div>
+    </div>
+
+</body>
+</html>

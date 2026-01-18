@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zafran Admin - Dashboard</title>
+    <link rel="icon" type="image/png" href="favlogo.png">
+    <style>
+        /* --- KDS THEME VARIABLES --- */
+        :root {
+            --bg-dark: #1a1a1a;        
+            --card-bg: #2a2a2a;      
+            --gold: #D4AF37;
+            --text-main: #f0f0f0;
+            --text-subtle: #aaa;
+            --border-color: #444;
+            --success-green: #28a745;
+            --danger-red: #dc3545;
+            --warning-orange: #d35400;
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            padding: 20px; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        
+        .admin-container { 
+            max-width: 1000px; 
+            width: 100%;
+            margin: 0 auto 30px auto; 
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+
+        /* Header Logo & Lang */
+        .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .header-logo { height: 60px; }
+        
+        .lang-switch { display: flex; border: 1px solid var(--gold); border-radius: 4px; overflow: hidden; }
+        .lang-btn { background: transparent; border: none; color: var(--gold); padding: 5px 12px; cursor: pointer; font-weight: bold; }
+        .lang-btn.active { background: var(--gold); color: #000; }
+
+        h2, h3 { 
+            color: var(--gold); 
+            margin-bottom: 20px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        h2 { border-bottom: 2px solid var(--gold); padding-bottom: 10px; text-align: center; }
+
+        /* Forms */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .full-width { grid-column: span 2; }
+        
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9rem; color: var(--gold); }
+        
+        input[type="text"], input[type="number"], input[type="date"], input[type="time"], input[type="datetime-local"], input[type="password"], select, textarea { 
+            width: 100%; padding: 12px; 
+            border: 1px solid var(--border-color); 
+            background-color: #111;
+            color: white;
+            border-radius: 4px; box-sizing: border-box; font-size: 1rem;
+        }
+        input:focus, select:focus { border-color: var(--gold); outline: none; }
+        
+        /* Radio & Checkbox */
+        .radio-group { display: flex; gap: 20px; padding: 10px 0; }
+        .radio-item, .checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95rem; }
+        input[type="checkbox"], input[type="radio"] { accent-color: var(--gold); transform: scale(1.2); cursor: pointer; width: auto; }
+        
+        .checkbox-group { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 10px; margin-top: 5px; 
+            background: #111; padding: 15px; border-radius: 4px; border: 1px solid var(--border-color); 
+        }
+
+        /* Buttons */
+        button { 
+            background-color: var(--gold); 
+            color: #000; border: none; padding: 12px; width: 100%; 
+            font-size: 1rem; cursor: pointer; border-radius: 4px; 
+            font-weight: bold; margin-top: 10px; transition: background 0.2s; 
+            text-transform: uppercase;
+        }
+        button:hover { background-color: #fff; }
+        button.btn-blue { background-color: #007bff; color: white; }
+        button.btn-blue:hover { background-color: #0056b3; }
+        button.btn-red { background-color: var(--danger-red); color: white; }
+        button.btn-red:hover { background-color: #ff6b6b; }
+        button.btn-small { padding: 8px; font-size: 0.8rem; width: auto; display: inline-block; margin: 0; }
+
+        /* Messages */
+        .message-box { margin-top: 15px; padding: 12px; text-align: center; border-radius: 4px; display: none; font-weight: bold; font-size: 0.9rem; }
+        .success { background-color: rgba(40, 167, 69, 0.2); color: #2ecc71; border: 1px solid #2ecc71; display: block; }
+        .error { background-color: rgba(220, 53, 69, 0.2); color: #ff6b6b; border: 1px solid #ff6b6b; display: block; }
+
+        /* Tables */
+        .table-container { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; background: #222; border-radius: 4px; overflow: hidden; }
+        th { background-color: #111; color: var(--gold); padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color); white-space: nowrap; }
+        td { padding: 12px; border-bottom: 1px solid #333; vertical-align: middle; color: #ddd; }
+        tr:hover { background-color: #2f2f2f; }
+        
+        /* Badges */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; color: black; display: inline-block; }
+        .badge-percent { background: #90caf9; }
+        .badge-fixed { background: #a5d6a7; }
+        .status-active { color: #2ecc71; background: rgba(46, 204, 113, 0.1); padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .status-inactive { color: #e74c3c; background: rgba(231, 76, 60, 0.1); padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+
+        /* --- NEW: HOURS SECTION STYLES --- */
+        .hours-row { display: grid; grid-template-columns: 100px 1fr 1fr; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #333; }
+        .hours-row:last-child { border-bottom: none; }
+        .day-label { font-weight: bold; color: var(--gold); }
+        .service-card { background: #222; border: 1px solid #444; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        
+        .holiday-list { margin-top: 15px; max-height: 200px; overflow-y: auto; }
+        .holiday-item { background: #111; padding: 10px; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+
+        /* Login & Modals */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .login-box { background: var(--card-bg); padding: 40px; border-radius: 8px; border: 2px solid var(--gold); text-align: center; width: 90%; max-width: 400px; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5000; justify-content: center; align-items: center; }
+        .modal-box { background: var(--card-bg); padding: 30px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; border: 2px solid var(--gold); }
+
+        .btn-action-x { background-color: var(--danger-red); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; line-height: 28px; padding: 0; }
+        
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .hours-row { grid-template-columns: 1fr; gap: 5px; border-bottom: 2px dashed #444; padding: 15px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <div class="login-box">
+        <img src="logo.png" alt="Zafran" style="height: 80px; margin-bottom: 20px;">
+        <h3 style="color:var(--gold); margin-bottom:20px;">ADMIN LOGIN</h3>
+        <form id="login-form">
+            <input type="password" id="admin-password" placeholder="Passwort / Password" required style="text-align:center; margin-bottom:15px;">
+            <button type="submit">Login</button>
+            <p id="login-error" style="color:red; margin-top:10px; font-size:0.9rem;"></p>
+        </form>
+    </div>
+</div>
+
+<div id="admin-content" style="display:none;">
+
+    <div class="admin-container">
+        <div class="header-top">
+            <img src="logo.png" alt="Zafran Logo" class="header-logo">
+            <div class="lang-switch">
+                <button class="lang-btn active" id="btn-de" onclick="changeAdminLang('de')">DE</button>
+                <button class="lang-btn" id="btn-en" onclick="changeAdminLang('en')">EN</button>
+            </div>
+        </div>
+
+        <h2 data-i18n="settings_title">Webseiten Einstellungen</h2>
+        <form id="settings-form">
+            <div class="form-group">
+                <label data-i18n="marquee_label">Laufschrift (Marquee) Text</label>
+                <input type="text" id="marqueeText" placeholder="z.B. Willkommen! 10% Rabatt...">
+            </div>
+            <div class="form-group">
+                <label data-i18n="whatsapp_label">WhatsApp Nummer</label>
+                <input type="text" id="whatsappNumber" placeholder="4915123456789">
+            </div>
+            <button type="submit" id="settingsBtn" class="btn-blue" data-i18n="save_settings">Einstellungen Speichern</button>
+            <div id="settings-message" class="message-box"></div>
+        </form>
+    </div>
+
+    <div class="admin-container" id="hours-section">
+        <h2 data-i18n="hours_title">Öffnungszeiten & Status</h2>
+        
+        <div class="service-card" style="border-color: var(--warning-orange);">
+            <h3 style="margin-bottom:10px; font-size:1.1rem; color:var(--warning-orange);" data-i18n="emergency_mode">🛑 Notfall / Pause (Scenario 4)</h3>
+            <p style="font-size:0.9rem; color:#ccc;" data-i18n="emergency_desc">Stoppen Sie Bestellungen sofort für eine kurze Zeit.</p>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+                <select id="pauseServiceType">
+                    <option value="all" data-i18n="srv_all">Alle Services</option>
+                    <option value="delivery" data-i18n="srv_delivery">Nur Lieferung</option>
+                    <option value="pickup" data-i18n="srv_pickup">Nur Abholung</option>
+                </select>
+                <select id="pauseDuration">
+                    <option value="30">30 Min</option>
+                    <option value="60">1 Std</option>
+                    <option value="120">2 Std</option>
+                    <option value="240">4 Std</option>
+                    <option value="today" data-i18n="rest_of_day">Rest des Tages</option>
+                </select>
+            </div>
+            <button class="btn-red" style="margin-top:10px;" onclick="applyPause()" data-i18n="btn_apply_pause">Pause Aktivieren</button>
+            <div id="active-pause-info" style="margin-top:10px; color:var(--warning-orange); font-weight:bold; display:none;">
+                ⚠️ <span id="pause-text"></span> <button class="btn-small" onclick="clearPause()" style="margin-left:10px;">RESET</button>
+            </div>
+        </div>
+
+        <div class="service-card">
+            <h3 style="margin-bottom:10px; font-size:1.1rem;" data-i18n="holiday_mode">📅 Urlaub & Schließzeiten (Scenario 3)</h3>
+            <div class="form-grid">
+                <div><label data-i18n="start_date">Start</label><input type="datetime-local" id="holidayStart"></div>
+                <div><label data-i18n="end_date">Ende</label><input type="datetime-local" id="holidayEnd"></div>
+            </div>
+            <div style="margin-top:10px;"><label data-i18n="reason">Grund (Optional)</label><input type="text" id="holidayReason" placeholder="Betriebsferien / Renovierung"></div>
+            <button class="btn-blue" onclick="addHoliday()" style="margin-top:10px;" data-i18n="add_closure">Schließzeit Hinzufügen</button>
+            
+            <div class="holiday-list" id="holidayList">
+                </div>
+        </div>
+
+        <div class="service-card">
+            <h3 style="margin-bottom:10px; font-size:1.1rem;" data-i18n="weekly_schedule">⏰ Wochenplan (Scenario 1 & 2)</h3>
+            <p style="font-size:0.85rem; color:#888; margin-bottom:15px;" data-i18n="schedule_hint">Definieren Sie hier, wann das Restaurant geöffnet ist und wann Lieferung möglich ist.</p>
+            
+            <div style="background:#111; padding:10px; border-radius:4px;">
+                <div class="hours-row" style="border-bottom:2px solid var(--gold);">
+                    <div data-i18n="day">Tag</div>
+                    <div style="text-align:center; color:var(--gold);" data-i18n="shop_hours">Restaurant Öffnungszeit</div>
+                    <div style="text-align:center; color:var(--gold);" data-i18n="delivery_hours">Lieferzeiten (Extrawurst)</div>
+                </div>
+                <div id="weekly-schedule-container">
+                    </div>
+            </div>
+            <button onclick="saveHours()" style="margin-top:20px;" data-i18n="save_hours">Öffnungszeiten Speichern</button>
+            <div id="hours-message" class="message-box"></div>
+        </div>
+    </div>
+
+    <div class="admin-container">
+        <h2 data-i18n="coupon_title">Coupon Manager</h2>
+        <form id="coupon-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label data-i18n="code">Code *</label>
+                    <input type="text" id="code" required style="text-transform: uppercase;" placeholder="SUMMER25">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="validity_mode">Modus *</label>
+                    <select id="validityMode" onchange="toggleDateInputs()">
+                        <option value="range" selected data-i18n="mode_range">Datums-Bereich</option>
+                        <option value="recurring" data-i18n="mode_recurring">Monatlich Wiederkehrend</option>
+                    </select>
+                </div>
+
+                <div id="rangeInputs" class="full-width" style="background:#222; padding:15px; border-radius:4px;">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="startNow" checked onchange="toggleStartField()">
+                        <span style="color:var(--gold);" data-i18n="valid_now">Gültig ab sofort?</span>
+                    </label>
+                    <div style="display:flex; gap:20px; margin-top:10px;">
+                        <div class="form-group" id="startDateGroup" style="display:none; flex:1;">
+                            <label data-i18n="start_date">Start</label><input type="date" id="startDate">
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label data-i18n="end_date">Ende *</label><input type="date" id="expiry">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="recurringInputs" class="form-group full-width" style="display:none;">
+                    <label data-i18n="week_rule">Woche des Monats</label>
+                    <select id="recurringRule">
+                        <option value="week1">Week 1 (1-7)</option>
+                        <option value="week2">Week 2 (8-14)</option>
+                        <option value="week3">Week 3 (15-21)</option>
+                        <option value="week4">Week 4 (22+)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="disc_type">Typ</label>
+                    <div class="radio-group">
+                        <label class="radio-item"><input type="radio" name="discountType" value="percent" checked> % Prozent</label>
+                        <label class="radio-item"><input type="radio" name="discountType" value="fixed"> € Euro</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="value">Wert *</label>
+                    <input type="number" id="discountValue" step="0.1" required>
+                </div>
+                <div class="form-group full-width">
+                    <label data-i18n="min_order">Mindestbestellwert (€)</label>
+                    <input type="number" id="minOrder" value="20">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label data-i18n="categories">Kategorien (Leer = Alle)</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="suppen"> Suppen & Salate</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="vorspeisen"> Vorspeisen</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="vegetarisches"> Vegetarisch</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="veganes"> Veganes</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="chicken"> Chicken</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="lamm"> Lamm</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="fisch-garnelen"> Fisch & Garnelen</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="tandoori"> Tandoori</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="biryani"> Biryani</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="brot"> Brot & Beilagen</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="dessert"> Dessert</label>
+                        <label class="checkbox-item"><input type="checkbox" name="cat" value="getraenke"> Getränke</label>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" id="submitBtn" data-i18n="save_coupon">Coupon Speichern</button>
+            <div id="message" class="message-box"></div>
+        </form>
+
+        <div class="table-container">
+            <h3 data-i18n="saved_coupons">Gespeicherte Coupons</h3>
+            <table id="coupons-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Wert</th>
+                        <th>Min €</th>
+                        <th data-i18n="validity">Gültigkeit</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="coupons-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="admin-footer" style="text-align:center; padding:20px; color:#666; font-size:0.8rem;">
+        &copy; 2025 Zafran Delight Admin
+    </footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+<script>
+    // --- TRANSLATIONS (DE/EN) ---
+    const translations = {
+        de: {
+            settings_title: "Webseiten Einstellungen", marquee_label: "Laufschrift Text", whatsapp_label: "WhatsApp Nummer", save_settings: "Einstellungen Speichern",
+            hours_title: "Öffnungszeiten & Status", emergency_mode: "🛑 Notfall / Pause", emergency_desc: "Stoppen Sie Bestellungen sofort für eine kurze Zeit.",
+            srv_all: "Alle Services", srv_delivery: "Nur Lieferung", srv_pickup: "Nur Abholung", rest_of_day: "Rest des Tages",
+            btn_apply_pause: "Pause Aktivieren", holiday_mode: "📅 Urlaub & Schließzeiten", start_date: "Start", end_date: "Ende",
+            reason: "Grund (Optional)", add_closure: "Schließzeit Hinzufügen", weekly_schedule: "⏰ Wochenplan",
+            schedule_hint: "Standard Zeiten. Haken raus = Geschlossen. Wenn Lieferzeiten leer sind, gelten Restaurantzeiten.",
+            day: "Tag", shop_hours: "Restaurant", delivery_hours: "Lieferung (Optional)", save_hours: "Öffnungszeiten Speichern",
+            coupon_title: "Coupon Manager", code: "Gutschein-Code *", validity_mode: "Gültigkeits-Modus", mode_range: "Datums-Bereich", mode_recurring: "Monatlich Wiederkehrend",
+            valid_now: "Gültig ab sofort?", week_rule: "Woche des Monats", disc_type: "Rabatt Typ", value: "Wert *", min_order: "Mindestbestellwert (€)",
+            categories: "Gültig für Kategorien", save_coupon: "Coupon Speichern", saved_coupons: "Gespeicherte Coupons", validity: "Gültigkeit"
+        },
+        en: {
+            settings_title: "Website Settings", marquee_label: "Marquee Text", whatsapp_label: "WhatsApp Number", save_settings: "Save Settings",
+            hours_title: "Business Hours & Status", emergency_mode: "🛑 Emergency / Pause", emergency_desc: "Stop orders immediately for a short duration.",
+            srv_all: "All Services", srv_delivery: "Delivery Only", srv_pickup: "Pickup Only", rest_of_day: "Rest of Day",
+            btn_apply_pause: "Activate Pause", holiday_mode: "📅 Holidays & Closures", start_date: "Start", end_date: "End",
+            reason: "Reason (Optional)", add_closure: "Add Closure Period", weekly_schedule: "⏰ Weekly Schedule",
+            schedule_hint: "Standard hours. Uncheck = Closed. If Delivery hours are empty, Restaurant hours apply.",
+            day: "Day", shop_hours: "Restaurant Open", delivery_hours: "Delivery Hours", save_hours: "Save Hours",
+            coupon_title: "Coupon Manager", code: "Coupon Code *", validity_mode: "Validity Mode", mode_range: "Date Range", mode_recurring: "Monthly Recurring",
+            valid_now: "Valid immediately?", week_rule: "Week of Month", disc_type: "Discount Type", value: "Value *", min_order: "Min Order (€)",
+            categories: "Valid Categories", save_coupon: "Save Coupon", saved_coupons: "Saved Coupons", validity: "Validity"
+        }
+    };
+
+    let currentLang = localStorage.getItem('admin_lang') || 'de';
+
+    function changeAdminLang(lang) {
+        currentLang = lang;
+        localStorage.setItem('admin_lang', lang);
+        
+        // Update Buttons
+        document.getElementById('btn-de').className = lang === 'de' ? 'lang-btn active' : 'lang-btn';
+        document.getElementById('btn-en').className = lang === 'en' ? 'lang-btn active' : 'lang-btn';
+
+        // Update Text
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if(translations[lang][key]) {
+                if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = translations[lang][key];
+                else el.innerText = translations[lang][key];
+            }
+        });
+
+        // Regenerate Table to update Day names
+        renderWeeklySchedule();
+    }
+
+    // --- FIREBASE INIT ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyAVh2kVIuFcrt8Dg88emuEd9CQlqjJxDrA",
+      authDomain: "zaffran-delight.firebaseapp.com",
+      projectId: "zaffran-delight",
+      storageBucket: "zaffran-delight.firebasestorage.app",
+      messagingSenderId: "1022960860126",
+      appId: "1:1022960860126:web:1e06693dea1d0247a0bb4f"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- AUTH & LOAD ---
+    const ADMIN_PASSWORD = "zafran2025"; 
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if(sessionStorage.getItem('zafran_admin_logged_in') === 'true') {
+            initAdmin();
+        }
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(document.getElementById('admin-password').value === ADMIN_PASSWORD) {
+                sessionStorage.setItem('zafran_admin_logged_in', 'true');
+                initAdmin();
+            } else {
+                document.getElementById('login-error').textContent = "Incorrect Password";
+            }
+        });
+    });
+
+    function initAdmin() {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('admin-content').style.display = 'block';
+        changeAdminLang(currentLang);
+        loadSettings();
+        loadHours(); 
+        loadCoupons();
+    }
+
+    // ==========================================
+    // 1. GENERAL SETTINGS
+    // ==========================================
+    function loadSettings() {
+        db.collection('settings').doc('general').get().then((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                document.getElementById('marqueeText').value = data.marqueeText || "";
+                document.getElementById('whatsappNumber').value = data.whatsappNumber || "";
+            }
+        });
+    }
+
+    document.getElementById('settings-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('settingsBtn'); btn.disabled = true;
+        try {
+            await db.collection('settings').doc('general').set({
+                marqueeText: document.getElementById('marqueeText').value.trim(),
+                whatsappNumber: document.getElementById('whatsappNumber').value.trim(),
+                updatedAt: new Date()
+            }, { merge: true });
+            alert(currentLang === 'de' ? "Gespeichert!" : "Saved!");
+        } catch (err) { alert("Error: " + err.message); }
+        btn.disabled = false;
+    });
+
+    // ==========================================
+    // 2. HOURS & SCHEDULE LOGIC
+    // ==========================================
+    
+    let weeklyConfig = {};
+    let holidays = [];
+    let pauseConfig = null;
+
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    const daysLabel = {
+        de: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'],
+        en: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    };
+
+    function loadHours() {
+        db.collection('settings').doc('hours').get().then((doc) => {
+            if(doc.exists) {
+                const data = doc.data();
+                weeklyConfig = data.weekly || {};
+                holidays = data.holidays || [];
+                pauseConfig = data.pause || null;
+                renderWeeklySchedule();
+                renderHolidays();
+                renderPauseStatus();
+            } else {
+                // Initialize Defaults
+                days.forEach(d => {
+                    weeklyConfig[d] = { open: true, start: "12:00", end: "21:00", delStart: "", delEnd: "" };
+                });
+                renderWeeklySchedule();
+            }
+        });
+    }
+
+    function renderWeeklySchedule() {
+        const container = document.getElementById('weekly-schedule-container');
+        container.innerHTML = "";
+        
+        days.forEach((day, index) => {
+            const conf = weeklyConfig[day] || { open: false, start: "", end: "", delStart: "", delEnd: "" };
+            const dayName = daysLabel[currentLang][index];
+
+            const html = `
+            <div class="hours-row" id="row-${day}">
+                <div class="day-label">
+                    <label class="checkbox-item" style="margin:0;">
+                        <input type="checkbox" onchange="toggleDay('${day}')" ${conf.open ? 'checked' : ''} id="check-${day}">
+                        ${dayName}
+                    </label>
+                </div>
+                
+                <div style="display:flex; gap:5px; align-items:center;">
+                    <input type="time" id="start-${day}" value="${conf.start}" ${!conf.open ? 'disabled' : ''}>
+                    <span>-</span>
+                    <input type="time" id="end-${day}" value="${conf.end}" ${!conf.open ? 'disabled' : ''}>
+                </div>
+
+                <div style="display:flex; gap:5px; align-items:center;">
+                    <input type="time" id="delStart-${day}" value="${conf.delStart}" ${!conf.open ? 'disabled' : ''} placeholder="Same">
+                    <span>-</span>
+                    <input type="time" id="delEnd-${day}" value="${conf.delEnd}" ${!conf.open ? 'disabled' : ''} placeholder="Same">
+                </div>
+            </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+        });
+    }
+
+    window.toggleDay = function(day) {
+        const isOpen = document.getElementById(`check-${day}`).checked;
+        ['start', 'end', 'delStart', 'delEnd'].forEach(prefix => {
+            const input = document.getElementById(`${prefix}-${day}`);
+            input.disabled = !isOpen;
+            if(!isOpen) input.value = "";
+        });
+    }
+
+    window.saveHours = async function() {
+        const newConfig = {};
+        days.forEach(day => {
+            newConfig[day] = {
+                open: document.getElementById(`check-${day}`).checked,
+                start: document.getElementById(`start-${day}`).value,
+                end: document.getElementById(`end-${day}`).value,
+                delStart: document.getElementById(`delStart-${day}`).value,
+                delEnd: document.getElementById(`delEnd-${day}`).value
+            };
+        });
+
+        const btn = document.querySelector('button[onclick="saveHours()"]');
+        btn.disabled = true; btn.innerText = "...";
+
+        try {
+            await db.collection('settings').doc('hours').set({
+                weekly: newConfig,
+                holidays: holidays, // preserve existing
+                pause: pauseConfig // preserve existing
+            }, { merge: true });
+            
+            const msg = document.getElementById('hours-message');
+            msg.textContent = currentLang === 'de' ? "Wochenplan Gespeichert!" : "Schedule Saved!";
+            msg.className = "message-box success";
+            msg.style.display = "block";
+            setTimeout(() => msg.style.display = "none", 3000);
+        } catch(e) { alert(e.message); }
+        btn.disabled = false; btn.innerText = translations[currentLang].save_hours;
+    }
+
+    // --- PAUSE LOGIC ---
+    window.applyPause = async function() {
+        const type = document.getElementById('pauseServiceType').value;
+        const duration = document.getElementById('pauseDuration').value;
+        let until = 0;
+
+        if(duration === 'today') {
+            const now = new Date();
+            now.setHours(23, 59, 59, 999);
+            until = now.getTime();
+        } else {
+            until = Date.now() + (parseInt(duration) * 60000);
+        }
+
+        pauseConfig = { active: true, type: type, until: until };
+        await updateHoursDoc({ pause: pauseConfig });
+        renderPauseStatus();
+    }
+
+    window.clearPause = async function() {
+        pauseConfig = null;
+        await updateHoursDoc({ pause: null });
+        renderPauseStatus();
+    }
+
+    function renderPauseStatus() {
+        const info = document.getElementById('active-pause-info');
+        const text = document.getElementById('pause-text');
+        
+        if(pauseConfig && pauseConfig.active && pauseConfig.until > Date.now()) {
+            const date = new Date(pauseConfig.until);
+            const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            text.innerText = `${pauseConfig.type.toUpperCase()} PAUSED UNTIL ${timeStr}`;
+            info.style.display = "block";
+        } else {
+            info.style.display = "none";
+        }
+    }
+
+    // --- HOLIDAY LOGIC ---
+    window.addHoliday = async function() {
+        const start = document.getElementById('holidayStart').value;
+        const end = document.getElementById('holidayEnd').value;
+        const reason = document.getElementById('holidayReason').value;
+
+        if(!start || !end) return alert("Start & End required");
+
+        holidays.push({ start, end, reason, id: Date.now() });
+        await updateHoursDoc({ holidays: holidays });
+        renderHolidays();
+        document.getElementById('holidayStart').value = "";
+        document.getElementById('holidayEnd').value = "";
+    }
+
+    window.removeHoliday = async function(id) {
+        holidays = holidays.filter(h => h.id !== id);
+        await updateHoursDoc({ holidays: holidays });
+        renderHolidays();
+    }
+
+    function renderHolidays() {
+        const list = document.getElementById('holidayList');
+        list.innerHTML = "";
+        // Sort by start date
+        holidays.sort((a,b) => new Date(a.start) - new Date(b.start));
+
+        holidays.forEach(h => {
+            const startDate = new Date(h.start).toLocaleDateString() + " " + new Date(h.start).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'});
+            const endDate = new Date(h.end).toLocaleDateString() + " " + new Date(h.end).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'});
+            
+            // Check if passed
+            const isPast = new Date(h.end) < new Date();
+            const style = isPast ? "opacity:0.5;" : "border-left:3px solid var(--danger-red);";
+
+            const item = `
+            <div class="holiday-item" style="${style}">
+                <div>
+                    <div style="font-weight:bold; color:var(--gold);">${h.reason || 'Closed'}</div>
+                    <div style="font-size:0.8rem; color:#ccc;">${startDate} ➝ ${endDate}</div>
+                </div>
+                <button class="btn-action-x" onclick="removeHoliday(${h.id})">X</button>
+            </div>`;
+            list.insertAdjacentHTML('beforeend', item);
+        });
+    }
+
+    async function updateHoursDoc(data) {
+        await db.collection('settings').doc('hours').set(data, { merge: true });
+    }
+
+    // ==========================================
+    // 3. COUPON LOGIC
+    // ==========================================
+    const couponForm = document.getElementById('coupon-form');
+    
+    function loadCoupons() {
+        const tableBody = document.getElementById('coupons-body');
+        db.collection("coupons").orderBy("createdAt", "desc").get().then((snap) => {
+            tableBody.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                const isPercent = d.discountType === 'percent';
+                const badge = isPercent ? 'badge-percent' : 'badge-fixed';
+                const val = isPercent ? `${d.discountValue}%` : `${d.discountValue}€`;
+                
+                const row = `<tr>
+                    <td style="color:var(--gold); font-weight:bold;">${d.code}</td>
+                    <td><span class="badge ${badge}">${val}</span></td>
+                    <td>${d.minOrder}€</td>
+                    <td>${d.mode === 'recurring' ? 'Recurring' : (d.validUntil || d.expiryDate)}</td>
+                    <td><span class="status-active">Active</span></td>
+                    <td><button class="btn-action-x" onclick="deleteCoupon('${d.code}')">X</button></td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        });
+    }
+
+    window.deleteCoupon = function(code) {
+        if(confirm("Delete " + code + "?")) {
+            db.collection("coupons").doc(code).delete().then(loadCoupons);
+        }
+    }
+
+    window.toggleDateInputs = function() {
+        const mode = document.getElementById('validityMode').value;
+        document.getElementById('rangeInputs').style.display = mode === 'range' ? 'block' : 'none';
+        document.getElementById('recurringInputs').style.display = mode === 'recurring' ? 'block' : 'none';
+    }
+    
+    window.toggleStartField = function() {
+        const now = document.getElementById('startNow').checked;
+        document.getElementById('startDateGroup').style.display = now ? 'none' : 'block';
+    }
+
+    couponForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = document.getElementById('code').value.toUpperCase().trim();
+        const mode = document.getElementById('validityMode').value;
+        const data = {
+            code, mode,
+            discountType: document.querySelector('input[name="discountType"]:checked').value,
+            discountValue: parseFloat(document.getElementById('discountValue').value),
+            minOrder: parseFloat(document.getElementById('minOrder').value),
+            createdAt: new Date().toISOString(),
+            validCategories: [] 
+        };
+
+        // Collect Categories
+        document.querySelectorAll('input[name="cat"]:checked').forEach(cb => {
+            data.validCategories.push(cb.value);
+        });
+        if(data.validCategories.length === 0) data.validCategories = 'all';
+
+        if(mode === 'range') {
+            if(document.getElementById('startNow').checked) data.validFrom = new Date().toISOString().split('T')[0];
+            else data.validFrom = document.getElementById('startDate').value;
+            data.validUntil = document.getElementById('expiry').value;
+        } else {
+            data.recurringRule = document.getElementById('recurringRule').value;
+        }
+
+        await db.collection("coupons").doc(code).set(data);
+        couponForm.reset();
+        document.getElementById('startNow').checked = true;
+        loadCoupons();
+        alert(currentLang === 'de' ? "Coupon Gespeichert!" : "Coupon Saved!");
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Track Order - Zafran</title>
+    <link rel="icon" href="favlogo.png" type="image/png">
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* --- MOBILE VARIABLES --- */
+        :root {
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --gold: #D4AF37;
+            --green: #4CAF50;
+            --text-main: #ffffff;
+            --text-sub: #aaaaaa;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Poppins', sans-serif; 
+            background: var(--bg-dark); 
+            color: var(--text-main); 
+            overflow: hidden; 
+            height: 100dvh; /* Dynamic Height for Mobile Browsers */
+            width: 100vw;
+        }
+
+        /* MAP */
+        #map { 
+            height: 100%; 
+            width: 100%; 
+            z-index: 1; 
+            opacity: 0.3; 
+            transition: opacity 0.8s ease; 
+        }
+        body.map-active #map { opacity: 1; }
+
+        /* BOTTOM SHEET (The Card) */
+        .tracker-overlay {
+            position: absolute; 
+            bottom: 0; left: 0; right: 0;
+            background: rgba(30, 30, 30, 0.98);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px); /* iOS Blur */
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 25px 20px;
+            
+            /* iPhone Safe Area (Home Bar) */
+            padding-bottom: calc(25px + env(safe-area-inset-bottom));
+            
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
+            z-index: 1000;
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* HEADER */
+        .track-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .order-id { font-size: 0.85rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .eta-badge { 
+            background: #333; color: #ccc; padding: 6px 14px; 
+            border-radius: 20px; font-weight: bold; font-size: 0.8rem; 
+            transition: all 0.3s;
+        }
+        .eta-badge.live { background: var(--green); color: white; animation: pulse-green 2s infinite; }
+
+        /* PROGRESS BAR */
+        .progress-container { display: flex; justify-content: space-between; position: relative; margin-bottom: 30px; padding: 0 10px; }
+        
+        .progress-line-bg {
+            position: absolute; top: 14px; left: 12%; right: 12%; height: 3px;
+            background: #444; z-index: 0; border-radius: 2px;
+        }
+        .progress-line-fill {
+            position: absolute; top: 14px; left: 12%; width: 0%; height: 3px;
+            background: var(--gold); z-index: 0; transition: width 0.6s ease; border-radius: 2px;
+        }
+
+        /* STEPS */
+        .step { position: relative; z-index: 1; text-align: center; width: 25%; opacity: 0.4; transition: all 0.4s; }
+        .step.active { opacity: 1; transform: scale(1.1); }
+        .step.completed { opacity: 1; }
+        
+        .step-icon {
+            width: 32px; height: 32px; background: #222; border-radius: 50%;
+            margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center;
+            border: 2px solid #444; transition: all 0.3s; color: #888;
+        }
+        
+        .step.active .step-icon { background: var(--gold); border-color: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+        .step.completed .step-icon { background: var(--gold); border-color: var(--gold); color: #000; }
+        
+        .step-label { font-size: 0.75rem; font-weight: 600; }
+
+        /* STATUS TEXT */
+        .status-message { text-align: center; margin-bottom: 15px; }
+        .status-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; color: #fff; letter-spacing: -0.5px; }
+        .status-sub { font-size: 0.95rem; color: #aaa; line-height: 1.4; }
+
+        /* DRIVER CARD */
+        .driver-info {
+            display: none; /* Shows via JS */
+            background: #252525; padding: 16px; border-radius: 16px;
+            align-items: center; margin-top: 20px; 
+            animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border: 1px solid #333;
+        }
+        .driver-avatar {
+            width: 48px; height: 48px; background: #333; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; margin-right: 15px;
+            color: var(--gold);
+        }
+        .driver-details { flex: 1; }
+        .driver-details h4 { margin: 0; font-size: 1.05rem; color: #fff; font-weight: 600; }
+        .driver-details p { margin: 2px 0 0; font-size: 0.85rem; color: #999; }
+        
+        .call-btn {
+            background: var(--green); color: white;
+            width: 48px; height: 48px; border-radius: 50%; border: none;
+            display: flex; align-items: center; justify-content: center; text-decoration: none;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+            transition: transform 0.1s;
+        }
+        .call-btn:active { transform: scale(0.95); }
+
+        /* LOADER */
+        .loader-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark); z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .loader-spinner {
+            border: 3px solid #333; border-top: 3px solid var(--gold);
+            border-radius: 50%; width: 45px; height: 45px; 
+            animation: spin 1s linear infinite; margin-bottom: 20px;
+        }
+
+        /* ANIMATIONS */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); } 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="loader-screen" id="loader">
+        <div class="loader-spinner"></div>
+        <div style="color: #888; font-size: 0.9rem; font-weight: 600;">Connecting...</div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="tracker-overlay">
+        
+        <div class="track-header">
+            <div>
+                <div class="order-id" id="display-id">LOADING...</div>
+                <div style="font-size: 0.8rem; color: #666; margin-top:2px;" id="order-time"></div>
+            </div>
+            <div class="eta-badge" id="eta-badge">Syncing</div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-line-bg"></div>
+            <div class="progress-line-fill" id="progress-fill"></div>
+
+            <div class="step" id="step-new">
+                <div class="step-icon"><span class="material-icons" style="font-size:16px">receipt</span></div>
+                <div class="step-label">Sent</div>
+            </div>
+            <div class="step" id="step-preparing">
+                <div class="step-icon"><span class="material-icons" style="font-size:16px">soup_kitchen</span></div>
+                <div class="step-label">Cooking</div>
+            </div>
+            <div class="step" id="step-delivery">
+                <div class="step-icon"><span class="material-icons" style="font-size:16px">directions_car</span></div>
+                <div class="step-label">On Way</div>
+            </div>
+            <div class="step" id="step-completed">
+                <div class="step-icon"><span class="material-icons" style="font-size:16px">check_circle</span></div>
+                <div class="step-label">Enjoy</div>
+            </div>
+        </div>
+
+        <div class="status-message">
+            <div class="status-title" id="status-title">Locating Order...</div>
+            <div class="status-sub" id="status-sub">Please wait a moment.</div>
+        </div>
+
+        <div class="driver-info" id="driver-card">
+            <div class="driver-avatar">
+                <span class="material-icons">person</span>
+            </div>
+            <div class="driver-details">
+                <h4>Your Driver</h4>
+                <p>Is arriving with your food</p>
+            </div>
+            <a href="tel:+491623757839" class="call-btn">
+                <span class="material-icons">phone</span>
+            </a>
+        </div>
+
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        // --- 1. CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVh2kVIuFcrt8Dg88emuEd9CQlqjJxDrA",
+            authDomain: "zaffran-delight.firebaseapp.com",
+            projectId: "zaffran-delight",
+            storageBucket: "zaffran-delight.firebasestorage.app",
+            messagingSenderId: "1022960860126",
+            appId: "1:1022960860126:web:1e06693dea1d0247a0bb4f"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // --- 2. MAP SETUP ---
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([50.661, 6.786], 13);
+        
+        // CartoDB Dark Matter (Fast & Mobile Friendly)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+        const carIcon = L.divIcon({
+            className: 'custom-car',
+            html: '<div style="font-size:32px; line-height:1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🚗</div>',
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
+        });
+
+        let driverMarker = null;
+
+        // --- 3. INIT ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('id');
+
+        if (!orderId) {
+            document.getElementById('loader').innerHTML = "<h3 style='color:white;'>Invalid Order Link</h3>";
+        } else {
+            initTracker(orderId);
+        }
+
+        // --- 4. LOGIC ---
+        function initTracker(id) {
+            db.collection("orders").doc(id).onSnapshot((doc) => {
+                document.getElementById('loader').style.display = 'none';
+
+                if (!doc.exists) {
+                    document.getElementById('status-title').innerText = "Order Not Found";
+                    return;
+                }
+
+                const data = doc.data();
+                updateUI(data);
+
+                // Map Update (Only if active)
+                if (data.status === 'out_for_delivery' && data.driverLocation) {
+                    const lat = data.driverLocation.lat;
+                    const lng = data.driverLocation.lng;
+
+                    document.body.classList.add('map-active');
+
+                    if (!driverMarker) {
+                        driverMarker = L.marker([lat, lng], {icon: carIcon}).addTo(map);
+                        map.flyTo([lat, lng], 15, { animate: true, duration: 1.5 });
+                    } else {
+                        driverMarker.setLatLng([lat, lng]);
+                        map.panTo([lat, lng]);
+                    }
+                }
+            });
+        }
+
+        function updateUI(data) {
+            document.getElementById('display-id').innerText = `ORDER #${orderId.slice(-4).toUpperCase()}`;
+            
+            if(data.createdAt && data.createdAt.toDate) {
+                const time = data.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                document.getElementById('order-time').innerText = `Time: ${time}`;
+            }
+
+            const status = data.status; 
+            let progress = 0;
+            let title = "Received";
+            let sub = "We received your order.";
+            let badgeText = "Received";
+            let badgeClass = "";
+
+            // Reset
+            ['new', 'preparing', 'delivery', 'completed'].forEach(step => {
+                document.getElementById(`step-${step}`).className = 'step';
+            });
+
+            if (status === 'new') {
+                progress = 12;
+                document.getElementById('step-new').classList.add('active');
+            } 
+            else if (status === 'preparing') {
+                progress = 37;
+                title = "Cooking";
+                sub = "Our chef is preparing your meal.";
+                badgeText = "Cooking";
+                document.getElementById('step-new').classList.add('completed');
+                document.getElementById('step-preparing').classList.add('active');
+            }
+            else if (status === 'ready') {
+                progress = 62;
+                title = "Packing";
+                sub = "Your food is ready & hot.";
+                badgeText = "Packing";
+                document.getElementById('step-new').classList.add('completed');
+                document.getElementById('step-preparing').classList.add('active');
+            }
+            else if (status === 'out_for_delivery') {
+                progress = 87;
+                title = "Driver on the Way!";
+                sub = "Track the car on the map.";
+                badgeText = "LIVE";
+                badgeClass = "live";
+                
+                document.getElementById('step-new').classList.add('completed');
+                document.getElementById('step-preparing').classList.add('completed');
+                document.getElementById('step-delivery').classList.add('active');
+                document.getElementById('driver-card').style.display = 'flex';
+            }
+            else if (status === 'completed') {
+                progress = 100;
+                title = "Delivered";
+                sub = "Enjoy your meal! 🍕";
+                badgeText = "DONE";
+                document.getElementById('eta-badge').style.background = '#4CAF50';
+                document.getElementById('eta-badge').style.color = '#fff';
+
+                document.querySelectorAll('.step').forEach(el => el.classList.add('completed'));
+                document.getElementById('step-completed').classList.add('active');
+                
+                document.getElementById('driver-card').style.display = 'none';
+                document.body.classList.remove('map-active');
+            }
+
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+            document.getElementById('status-title').innerText = title;
+            document.getElementById('status-sub').innerText = sub;
+            const badge = document.getElementById('eta-badge');
+            badge.innerText = badgeText;
+            badge.className = `eta-badge ${badgeClass}`;
+        }
+    </script>
+    <div id="cookie-banner" style="position:fixed; bottom:0; left:0; width:100%; background:#111; color:white; padding:20px; border-top:2px solid #D4AF37; z-index:10000; display:none; box-shadow: 0 -5px 20px rgba(0,0,0,0.8);">
+    <div style="max-width: 1200px; margin: 0 auto; display:flex; flex-direction:column; gap:15px; align-items:center; text-align:center;">
+        
+        <h3 style="margin:0; color:#D4AF37;">🍪 Datenschutzeinstellungen</h3>
+        <p style="font-size:0.9rem; color:#ccc; margin:0;">
+            Wir nutzen Cookies und externe Dienste (Google Fonts, Firebase, OpenStreetMap), um unsere Website zu betreiben. 
+            Einige sind technisch notwendig, andere helfen uns, unser Angebot zu verbessern.
+            <br>
+            <a href="privacy.html" style="color:#fff; text-decoration:underline;">Mehr erfahren</a> | 
+            <a href="imprint.html" style="color:#fff; text-decoration:underline;">Impressum</a>
+        </p>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button onclick="acceptAllCookies()" style="background:#D4AF37; color:black; border:none; padding:10px 25px; border-radius:5px; font-weight:bold; cursor:pointer;">Alle Akzeptieren</button>
+            <button onclick="acceptEssentialCookies()" style="background:#333; color:white; border:1px solid #666; padding:10px 25px; border-radius:5px; cursor:pointer;">Nur Notwendige</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Check if user already decided
+    if (!localStorage.getItem('cookieConsent')) {
+        document.getElementById('cookie-banner').style.display = 'block';
+    }
+
+    function acceptAllCookies() {
+        localStorage.setItem('cookieConsent', 'all');
+        document.getElementById('cookie-banner').style.display = 'none';
+        // Only load map if the function exists (prevents errors on other pages)
+        if (typeof loadMap === 'function') {
+        loadMap();
+        }
+    }
+
+    function acceptEssentialCookies() {
+        localStorage.setItem('cookieConsent', 'essential');
+        document.getElementById('cookie-banner').style.display = 'none';
+    }
+</script>
+</body>
+</html>
