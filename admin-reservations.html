@@ -12,7 +12,6 @@
             --card-bg: #2a2a2a;      
             --gold: #D4AF37;
             --text-main: #f0f0f0;
-            --text-subtle: #aaa;
             --border-color: #444;
             --danger-red: #dc3545;
             --success-green: #28a745;
@@ -22,64 +21,54 @@
             background-color: var(--bg-dark); 
             color: var(--text-main); 
             padding: 20px; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            display: flex; flex-direction: column; min-height: 100vh; margin: 0; box-sizing: border-box;
+            font-family: sans-serif;
+            display: flex; flex-direction: column; min-height: 100vh; margin: 0;
         }
         
         .admin-container { 
             max-width: 1100px; width: 100%; margin: 0 auto 30px auto; 
             background: var(--card-bg); padding: 30px; border-radius: 8px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid var(--border-color);
+            border: 1px solid var(--border-color);
         }
 
         .header-logo { display: block; height: 60px; margin: 0 auto 10px auto; }
         
         h2 { 
             border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px; 
-            color: var(--gold); text-align: center; text-transform: uppercase; font-size: 1.4rem;
+            color: var(--gold); text-align: center; text-transform: uppercase;
         }
 
         /* FILTERS */
         .filter-bar {
-            display: flex; gap: 15px; margin-bottom: 20px; align-items: center; background: #111; padding: 15px; border-radius: 6px; border: 1px solid #333; flex-wrap: wrap;
+            display: flex; gap: 15px; margin-bottom: 20px; align-items: center; background: #111; padding: 15px; border-radius: 6px; flex-wrap: wrap;
         }
         .filter-bar label { font-weight: bold; color: var(--gold); margin-right: 5px; }
         .filter-bar input, .filter-bar select {
             padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: white;
         }
-        .filter-group { display: flex; align-items: center; }
-
         .btn-refresh {
             padding: 8px 15px; background: var(--gold); color: black; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: auto;
         }
         .btn-show-all {
             padding: 8px 15px; background: #444; color: white; border: 1px solid #666; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: 10px;
         }
-        .btn-refresh:hover { background: white; }
-        .btn-show-all:hover { background: #666; }
 
-        /* TABLE STYLES */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.95rem; background: #222; border-radius: 4px; overflow: hidden; }
-        th { background-color: #111; color: var(--gold); padding: 12px; text-align: left; font-size: 0.9rem; border-bottom: 2px solid var(--border-color); }
-        td { padding: 12px; border-bottom: 1px solid #333; vertical-align: middle; color: #ddd; }
-        tr:hover { background-color: #2f2f2f; }
-
+        /* TABLE */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #222; }
+        th { background: #111; color: var(--gold); padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color); }
+        td { padding: 12px; border-bottom: 1px solid #333; vertical-align: middle; }
+        
         .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
-        .status-confirmed { background: rgba(40, 167, 69, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
-        .status-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid #ffc107; }
-        .status-cancelled { background: rgba(220, 53, 69, 0.2); color: #ff6b6b; border: 1px solid #ff6b6b; }
+        .status-confirmed { color: #2ecc71; border: 1px solid #2ecc71; }
+        .status-pending { color: #ffc107; border: 1px solid #ffc107; }
+        .status-cancelled { color: #ff6b6b; border: 1px solid #ff6b6b; }
 
-        /* ACTION BUTTONS */
         .btn-action {
             border: none; width: 32px; height: 32px; border-radius: 4px; 
-            cursor: pointer; font-weight: bold; margin-left: 5px; display: inline-flex; 
-            align-items: center; justify-content: center; font-size: 1.1rem;
+            cursor: pointer; font-weight: bold; margin-left: 5px; font-size: 1.1rem;
         }
-        .btn-accept { background-color: var(--success-green); color: white; }
-        .btn-accept:hover { background-color: #218838; }
-        
-        .btn-delete { background-color: var(--danger-red); color: white; }
-        .btn-delete:hover { background-color: #c82333; }
+        .btn-accept { background: var(--success-green); color: white; }
+        .btn-delete { background: var(--danger-red); color: white; }
 
         /* LOGIN OVERLAY */
         #login-overlay {
@@ -91,18 +80,15 @@
             background: var(--card-bg); padding: 40px; border-radius: 8px;
             border: 2px solid var(--gold); text-align: center; width: 90%; max-width: 400px;
         }
-        .login-box img { height: 80px; margin-bottom: 20px; }
-        .login-box input { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #444; background: #111; color: white; text-align: center;}
+        .login-box input { width: 100%; padding: 10px; margin-bottom: 15px; background: #111; color: white; border: 1px solid #444; text-align: center;}
         .login-box button { width: 100%; padding: 10px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; }
-
-        footer { margin-top: auto; text-align: center; padding: 15px; color: #666; font-size: 0.8rem; border-top: 1px solid #333; }
     </style>
 </head>
 <body>
 
 <div id="login-overlay">
     <div class="login-box">
-        <img src="logo.png" alt="Zafran">
+        <img src="logo.png" alt="Zafran" style="height:80px; margin-bottom:20px;">
         <h3 style="color:var(--gold); margin-bottom:20px;">RESERVATION ADMIN</h3>
         <form id="login-form">
             <input type="password" id="admin-password" placeholder="Passwort eingeben" required>
@@ -118,11 +104,11 @@
         <h2>Tisch Reservierungen</h2>
         
         <div class="filter-bar">
-            <div class="filter-group">
+            <div>
                 <label>Datum:</label>
                 <input type="date" id="filter-date">
             </div>
-            <div class="filter-group">
+            <div>
                 <label>Status:</label>
                 <select id="filter-status">
                     <option value="all">Alle</option>
@@ -131,7 +117,6 @@
                     <option value="cancelled">Storniert</option>
                 </select>
             </div>
-            
             <button class="btn-show-all" onclick="loadAllReservations()">Alle Anzeigen</button>
             <button class="btn-refresh" onclick="loadReservations()">Aktualisieren ↻</button>
         </div>
@@ -156,18 +141,14 @@
         </div>
         
         <div style="margin-top: 15px; text-align: right; color: var(--gold); font-weight: bold;">
-            Total Gäste (Angezeigte Liste): <span id="total-guests-count">0</span>
+            Total Gäste (Liste): <span id="total-guests-count">0</span>
         </div>
     </div>
-
-    <footer>
-        <p>&copy; 2025 Zafran Delight. Reservation Management System.</p>
-    </footer>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script> 
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script> 
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
     // --- 1. CONFIG ---
@@ -187,231 +168,189 @@
     }
     const db = firebase.firestore();
 
-    // --- 2. LOGIN LOGIC ---
+    // --- 2. LOGIN & INIT ---
     document.addEventListener("DOMContentLoaded", () => {
-        // Set Default Date to LOCAL Today (correcting timezone issue)
-        const dateInput = document.getElementById('filter-date');
+        // Init Date Picker with TODAY (Local Time)
         const now = new Date();
-        const localDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-        dateInput.value = localDate;
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        document.getElementById('filter-date').value = `${yyyy}-${mm}-${dd}`;
 
-        // AUTH CHECK
+        // Monitor Auth State
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                showAdminContent();
+                // If logged in (Anonymously), show content
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                
+                // Load data if empty
+                if(document.getElementById('res-body').innerText.includes("Lade")) {
+                    loadReservations();
+                }
             } else {
+                // Show Login Screen
                 document.getElementById('login-overlay').style.display = 'flex';
                 document.getElementById('admin-content').style.display = 'none';
             }
         });
 
-        // LOGIN SUBMIT
+        // Handle Login Form
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const input = document.getElementById('admin-password').value;
-            const loginError = document.getElementById('login-error');
-            const loginBtn = document.querySelector('#login-form button');
+            const pass = document.getElementById('admin-password').value;
+            const btn = document.querySelector('#login-form button');
+            const err = document.getElementById('login-error');
 
-            if(input === ADMIN_PASSWORD) {
-                loginBtn.innerText = "Verbinden...";
-                loginBtn.disabled = true;
+            if (pass === ADMIN_PASSWORD) {
+                btn.innerText = "Verbinde...";
+                btn.disabled = true;
 
-                const hiddenEmail = "webmaster@zafraneuskirchen.de"; 
-                const hiddenPass  = "!Zafran2025"; 
-
-                firebase.auth().signInWithEmailAndPassword(hiddenEmail, hiddenPass)
-                .catch((error) => {
-                    console.error("Auth Error:", error);
-                    loginError.textContent = "Verbindungsfehler: " + error.message;
-                    loginBtn.innerText = "Einloggen";
-                    loginBtn.disabled = false;
+                // USE ANONYMOUS LOGIN (Same as Driver App)
+                firebase.auth().signInAnonymously().catch((error) => {
+                    console.error("Login Error:", error);
+                    err.textContent = "Datenbank-Fehler: " + error.message;
+                    btn.innerText = "Einloggen";
+                    btn.disabled = false;
                 });
             } else {
-                loginError.textContent = "Falsches Passwort!";
+                err.textContent = "Falsches Passwort!";
             }
         });
-        
-        // Listen for filter changes
+
+        // Filter Listeners
         document.getElementById('filter-date').addEventListener('change', loadReservations);
         document.getElementById('filter-status').addEventListener('change', loadReservations);
     });
 
-    function showAdminContent() {
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('admin-content').style.display = 'block';
-        
-        // Only load if table is empty (prevent double loading)
-        const tableBody = document.getElementById('res-body');
-        if(tableBody.innerHTML.includes("Lade Daten")) {
-            loadReservations();
-        }
-    }
+    // --- 3. DATA LOADING ---
 
-    // --- 3. LOAD DATA (Single Date) ---
+    // Load by Date (Default)
     function loadReservations() {
-        const dateFilter = document.getElementById('filter-date').value;
-        const statusFilter = document.getElementById('filter-status').value;
-        
-        let query = db.collection("reservations").where("date", "==", dateFilter);
-        
-        if(statusFilter !== 'all') {
-            query = query.where("status", "==", statusFilter);
+        const dateVal = document.getElementById('filter-date').value;
+        const statusVal = document.getElementById('filter-status').value;
+
+        // Visual Reset
+        renderLoading();
+
+        let query = db.collection("reservations").where("date", "==", dateVal);
+        if (statusVal !== 'all') {
+            query = query.where("status", "==", statusVal);
         }
 
-        fetchAndRender(query, `Keine Reservierungen für den ${dateFilter} gefunden.`);
+        executeFetch(query, `Keine Reservierungen für ${dateVal} gefunden.`);
     }
 
-    // --- 4. LOAD ALL DATA (Debug Mode) ---
+    // Load ALL (Debug/Overview)
     function loadAllReservations() {
-        // Clear date filter visually to indicate "All"
-        document.getElementById('filter-date').value = "";
-        
-        // Order by date descending (newest first)
-        // Note: This requires an index. If it fails, we fall back to unsorted.
+        document.getElementById('filter-date').value = ""; // Clear date input
+        renderLoading();
+
+        // Simple fetch of everything, ordered by date desc
         let query = db.collection("reservations").orderBy("date", "desc");
         
-        fetchAndRender(query, "Keine Reservierungen in der Datenbank gefunden.");
+        executeFetch(query, "Keine Reservierungen in der Datenbank.");
     }
 
-    // --- 5. RENDER FUNCTION ---
-    function fetchAndRender(query, emptyMessage) {
-        const tableBody = document.getElementById('res-body');
-        const totalCountEl = document.getElementById('total-guests-count');
-        
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#888;">Lade...</td></tr>';
+    function renderLoading() {
+        document.getElementById('res-body').innerHTML = '<tr><td colspan="7" style="text-align:center; color:#888;">Lade Daten...</td></tr>';
+    }
 
-        query.get().then((snapshot) => {
-            tableBody.innerHTML = "";
+    function executeFetch(query, emptyMsg) {
+        const tbody = document.getElementById('res-body');
+        const countEl = document.getElementById('total-guests-count');
+
+        query.get()
+        .then((snapshot) => {
+            tbody.innerHTML = "";
             let totalGuests = 0;
-            let reservations = [];
+            let list = [];
 
             if (snapshot.empty) {
-                tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">${emptyMessage}</td></tr>`;
-                totalCountEl.innerText = "0";
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">${emptyMsg}</td></tr>`;
+                countEl.innerText = "0";
                 return;
             }
 
             snapshot.forEach(doc => {
-                reservations.push({ id: doc.id, ...doc.data() });
+                list.push({ id: doc.id, ...doc.data() });
             });
 
-            // Sort manually if needed (backup for loadAll)
-            reservations.sort((a, b) => {
-                if(a.date === b.date) return a.time.localeCompare(b.time);
-                return b.date.localeCompare(a.date); // Newest date first
+            // Sort: Date Descending, then Time Ascending
+            list.sort((a, b) => {
+                if (b.date !== a.date) return b.date.localeCompare(a.date);
+                return a.time.localeCompare(b.time);
             });
 
-            reservations.forEach(res => {
-                // Calculate Guests
-                let g = parseInt(res.guests);
-                if(isNaN(g)) g = 0; 
-                // Count confirmed guests
+            list.forEach(res => {
+                // Count
+                let g = parseInt(res.guests) || 0;
                 if(res.status === 'confirmed') totalGuests += g;
 
-                // Status Styling
-                let statusClass = 'status-pending';
-                let statusText = res.status;
-                if(res.status === 'confirmed') { statusClass = 'status-confirmed'; statusText = 'Bestätigt'; }
-                else if(res.status === 'cancelled') { statusClass = 'status-cancelled'; statusText = 'Storniert'; }
-                else if(res.status === 'pending') { statusClass = 'status-pending'; statusText = 'Ausstehend'; }
+                // Badges
+                let sClass = 'status-pending';
+                let sText = res.status;
+                if(res.status === 'confirmed') { sClass = 'status-confirmed'; sText = 'Bestätigt'; }
+                if(res.status === 'cancelled') { sClass = 'status-cancelled'; sText = 'Storniert'; }
 
                 // Actions
-                let actionsHtml = `
-                    <button class="btn-action btn-delete" onclick="deleteReservation('${res.id}', '${res.name}')" title="Löschen">✕</button>
-                `;
-                
+                let actions = `<button class="btn-action btn-delete" onclick="deleteRes('${res.id}', '${res.name}')">✕</button>`;
                 if(res.status === 'pending') {
-                    const email = res.email ? res.email : '';
-                    actionsHtml = `
-                        <button class="btn-action btn-accept" onclick="confirmReservation('${res.id}', '${email}', '${res.name}', '${res.date}', '${res.time}', '${res.guests}')" title="Akzeptieren">✔</button>
-                        ${actionsHtml}
-                    `;
+                    let email = res.email || '';
+                    actions = `<button class="btn-action btn-accept" onclick="confirmRes('${res.id}', '${email}', '${res.name}', '${res.date}', '${res.time}', '${res.guests}')">✔</button> ` + actions;
                 }
 
-                // Format Date nicely
-                const dateParts = res.date.split('-');
-                const displayDate = `${dateParts[2]}.${dateParts[1]}.${dateParts[0]}`; // DD.MM.YYYY
+                // Date Format
+                let dParts = res.date.split('-'); 
+                let dDisplay = `${dParts[2]}.${dParts[1]}.${dParts[0]}`; // DD.MM.YYYY
 
-                const row = `
-                    <tr style="${res.status === 'cancelled' ? 'opacity:0.5;' : ''}">
-                        <td style="font-weight:bold; color:var(--gold); font-size:1.0rem;">
-                            ${displayDate} <br> <span style="font-size:1.2em">${res.time}</span>
-                        </td>
+                tbody.innerHTML += `
+                    <tr style="${res.status==='cancelled'?'opacity:0.5':''}">
+                        <td style="color:var(--gold); font-weight:bold;">${dDisplay}<br><span style="font-size:1.1em">${res.time}</span></td>
                         <td>${res.name}</td>
-                        <td style="font-weight:bold; text-align:center;">${res.guests}</td>
+                        <td style="text-align:center; font-weight:bold;">${res.guests}</td>
                         <td><a href="tel:${res.phone}" style="color:#aaa;text-decoration:none;">${res.phone}</a></td>
-                        <td style="color:#aaa; font-style:italic; font-size:0.85rem;">${res.notes || "-"}</td>
-                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                        <td style="text-align: right; white-space:nowrap;">
-                            ${actionsHtml}
-                        </td>
+                        <td style="font-size:0.9rem; font-style:italic; color:#aaa;">${res.notes || '-'}</td>
+                        <td><span class="status-badge ${sClass}">${sText}</span></td>
+                        <td style="text-align:right; white-space:nowrap;">${actions}</td>
                     </tr>
                 `;
-                tableBody.innerHTML += row;
             });
-
-            totalCountEl.innerText = totalGuests;
-
-        }).catch(error => {
-            console.error("Error loading reservations:", error);
-            let msg = "Fehler beim Laden.";
-            if (error.code === 'permission-denied') msg = "Zugriff verweigert (Auth Error).";
-            if (error.code === 'failed-precondition') msg = "Index fehlt (Check Console).";
-            
-            tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">${msg}<br><small>${error.message}</small></td></tr>`;
+            countEl.innerText = totalGuests;
+        })
+        .catch((err) => {
+            console.error("Fetch Error:", err);
+            let msg = err.message;
+            if(err.code === 'permission-denied') msg = "Zugriff verweigert. (Sind Sie eingeloggt?)";
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Fehler: ${msg}</td></tr>`;
         });
     }
 
-    // --- 6. ACTIONS ---
-
-    // CONFIRM
-    window.confirmReservation = function(id, email, name, date, time, guests) {
+    // --- 4. ACTIONS ---
+    window.confirmRes = function(id, email, name, date, time, guests) {
         if(!confirm(`Reservierung für ${name} bestätigen?`)) return;
-
-        db.collection("reservations").doc(id).update({
-            status: "confirmed"
-        }).then(() => {
-            loadReservations(); 
-            
-            if(email && email !== 'undefined' && email.trim() !== '') {
-                const subject = encodeURIComponent("Bestätigung Ihrer Reservierung - Zafran Delight");
-                const body = encodeURIComponent(
-`Hallo ${name},
-
-Vielen Dank für Ihre Reservierung bei Zafran Delight.
-Wir bestätigen hiermit Ihren Tisch:
-
-Datum: ${date}
-Uhrzeit: ${time} Uhr
-Personen: ${guests}
-
-Wir freuen uns auf Ihren Besuch!
-
-Mit freundlichen Grüßen,
-Ihr Zafran Delight Team`
-                );
+        
+        db.collection("reservations").doc(id).update({ status: "confirmed" })
+        .then(() => {
+            loadReservations();
+            if(email && email.length > 3) {
+                const subject = encodeURIComponent("Ihre Reservierung bei Zafran Delight");
+                const body = encodeURIComponent(`Hallo ${name},\n\nWir bestätigen Ihre Reservierung für den ${date} um ${time} Uhr (${guests} Pers).\n\nWir freuen uns auf Sie!\nIhr Zafran Team`);
                 window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
             }
-
-        }).catch(err => alert("Fehler: " + err.message));
+        })
+        .catch(e => alert("Fehler: " + e.message));
     };
 
-    // DELETE
-    window.deleteReservation = function(id, name) {
-        if(confirm(`Möchten Sie die Reservierung von "${name}" wirklich löschen?`)) {
-            db.collection("reservations").doc(id).delete()
-            .then(() => {
-                // Determine which view to refresh
-                if(document.getElementById('filter-date').value === "") {
-                    loadAllReservations();
-                } else {
-                    loadReservations();
-                }
-            })
-            .catch(err => alert("Fehler: " + err.message));
-        }
+    window.deleteRes = function(id, name) {
+        if(!confirm(`${name} wirklich löschen?`)) return;
+        db.collection("reservations").doc(id).delete()
+        .then(() => {
+            if(document.getElementById('filter-date').value === "") loadAllReservations();
+            else loadReservations();
+        })
+        .catch(e => alert("Fehler: " + e.message));
     };
-
 </script>
 
 </body>
