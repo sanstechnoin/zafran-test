@@ -279,7 +279,7 @@ if (loginButton) {
 
         // --- UPDATED LISTENER: NOW LISTENS FOR 'out_for_delivery' AND 'delivered' ---
         db.collection("orders")
-          .where("status", "in", ["new", "seen", "ready", "cooked", "out_for_delivery", "delivered"]) 
+          .where("status", "in", ["new", "seen", "ready", "cooked", "out_for_delivery", "delivered", "cancelled"]) 
           .onSnapshot(
             (snapshot) => {
                 if(connectionIconEl) connectionIconEl.textContent = '✅'; 
@@ -288,12 +288,19 @@ if (loginButton) {
                     const orderData = change.doc.data();
                     const isOnline = orderData.orderType === 'pickup' || orderData.orderType === 'delivery';
 
-                    if (orderData.orderType === 'assistance') {
+                  if (orderData.status === 'cancelled') {
+                        delete allOrders[change.doc.id];
+                        if(!isOnline) changedTables.add(orderData.table); 
+                        renderOnlineGrid(); 
+                        return; 
+                    }
+                  
+                  if (orderData.orderType === 'assistance') {
                         if (change.type === "added") showWaiterCall(orderData.table, change.doc.id);
                         if (change.type === "removed" && currentWaiterCallId === change.doc.id) stopWaiterSound();
                         return; 
                     }
-
+                    
                     if(!isOnline) changedTables.add(orderData.table); 
                     
                     if (change.type === "modified" && orderData.status === "ready") {
