@@ -183,10 +183,18 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('filter-date').value = today;
 
-        if(sessionStorage.getItem('zafran_res_admin_logged_in') === 'true') {
-            showAdminContent();
-        }
+        // AUTH STATE LISTENER (New robust way to handle refresh)
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // If user is already logged in, show content immediately
+                showAdminContent();
+            } else {
+                // If not logged in, show login form
+                document.getElementById('login-overlay').style.display = 'flex';
+            }
+        });
 
+        // Login Form Submit
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const input = document.getElementById('admin-password').value;
@@ -204,8 +212,7 @@
 
                 firebase.auth().signInWithEmailAndPassword(hiddenEmail, hiddenPass)
                 .then(() => {
-                    sessionStorage.setItem('zafran_res_admin_logged_in', 'true');
-                    showAdminContent();
+                    // Success! onAuthStateChanged will handle the UI switch
                 })
                 .catch((error) => {
                     console.error("Auth Error:", error);
@@ -250,18 +257,18 @@
             let totalGuests = 0;
             let reservations = [];
 
+            if (snapshot.empty) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#666;">Keine Reservierungen für dieses Datum gefunden.</td></tr>';
+                totalCountEl.innerText = "0";
+                return;
+            }
+
             snapshot.forEach(doc => {
                 reservations.push({ id: doc.id, ...doc.data() });
             });
 
             // Sort by Time
             reservations.sort((a, b) => a.time.localeCompare(b.time));
-
-            if (reservations.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#666;">Keine Reservierungen für dieses Datum gefunden.</td></tr>';
-                totalCountEl.innerText = "0";
-                return;
-            }
 
             reservations.forEach(res => {
                 // Calculate Guests
@@ -283,7 +290,6 @@
                 
                 // If Pending, show Accept Button
                 if(res.status === 'pending') {
-                    // Pass email (if exists) to the confirm function
                     const email = res.email ? res.email : '';
                     actionsHtml = `
                         <button class="btn-action btn-accept" onclick="confirmReservation('${res.id}', '${email}', '${res.name}', '${res.date}', '${res.time}', '${res.guests}')" title="Akzeptieren & Email senden">✔</button>
@@ -311,7 +317,10 @@
 
         }).catch(error => {
             console.error("Error loading reservations:", error);
-            tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Fehler beim Laden.</td></tr>';
+            // Show more detailed error to user
+            let msg = "Fehler beim Laden.";
+            if (error.code === 'permission-denied') msg = "Zugriff verweigert (Auth Fehler).";
+            tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">${msg}</td></tr>`;
         });
     }
 
