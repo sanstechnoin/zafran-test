@@ -38,6 +38,24 @@
             color: var(--gold); text-align: center; text-transform: uppercase;
         }
 
+        /* PIN MANAGER STYLES (NEW) */
+        .pin-section {
+            background: #111; padding: 20px; border-radius: 8px; 
+            border: 1px solid #444; margin-bottom: 30px; text-align: center;
+        }
+        .pin-box {
+            display: flex; gap: 10px; justify-content: center; align-items: center; margin-top: 10px;
+        }
+        .pin-input {
+            background: transparent; border: none; color: white; 
+            font-size: 1.5rem; letter-spacing: 3px; width: 120px; text-align: center;
+            border-bottom: 2px solid var(--gold);
+        }
+        .btn-save-pin {
+            background: var(--success-green); color: white; border: none; 
+            padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer;
+        }
+
         /* FILTERS */
         .filter-bar {
             display: flex; gap: 15px; margin-bottom: 20px; align-items: center; background: #111; padding: 15px; border-radius: 6px; flex-wrap: wrap;
@@ -83,6 +101,11 @@
         }
         .login-box input { width: 100%; padding: 10px; margin-bottom: 15px; background: #111; color: white; border: 1px solid #444; text-align: center;}
         .login-box button { width: 100%; padding: 10px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; }
+        
+        /* Message Box */
+        .message-box { margin-top: 10px; font-weight: bold; font-size: 0.9rem; min-height: 20px;}
+        .success-msg { color: var(--success-green); }
+        .error-msg { color: var(--danger-red); }
     </style>
 </head>
 <body>
@@ -102,6 +125,17 @@
 <div id="admin-content" style="display:none;">
     <div class="admin-container">
         <img src="logo.png" alt="Zafran Logo" class="header-logo">
+        
+        <div class="pin-section">
+            <h3 style="color:var(--gold); margin:0;">🚗 Fahrer Zugang (Driver PIN)</h3>
+            <div class="pin-box">
+                <span style="font-weight:bold; color:#888;">AKTUELLER PIN:</span>
+                <input type="text" id="driver-pin-input" class="pin-input" maxlength="6" placeholder="Loading...">
+                <button class="btn-save-pin" onclick="saveDriverPin()">SPEICHERN</button>
+            </div>
+            <div id="pin-status" class="message-box"></div>
+        </div>
+
         <h2>Tisch Reservierungen</h2>
         
         <div class="filter-bar">
@@ -119,7 +153,7 @@
                 </select>
             </div>
             <button class="btn-show-all" onclick="loadAllReservations()">Alle Anzeigen</button>
-            <button class="btn-refresh" onclick="loadReservations()">Aktualisieren ↻</button>
+            <button class="btn-refresh" onclick="resetAndLoadToday()">Aktualisieren ↻</button>
         </div>
 
         <div style="overflow-x:auto;">
@@ -164,7 +198,7 @@
       appId: "1:1022960860126:web:1e06693dea1d0247a0bb4f"
     };
     
-    // Initialize (Compat style)
+    // Initialize
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
@@ -172,26 +206,21 @@
 
     // --- 2. LOGIN & INIT ---
     document.addEventListener("DOMContentLoaded", () => {
-        // Init Date Picker with TODAY
-        const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now.getDate()).padStart(2, '0');
-        document.getElementById('filter-date').value = `${yyyy}-${mm}-${dd}`;
+        // Set Date Picker to TODAY on load
+        setTodayDate();
 
         // Monitor Auth State
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                // Logged in!
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
                 
-                // If the table is empty, load data
+                // Load Data
                 if(document.getElementById('res-body').innerText.includes("Lade")) {
                     loadReservations();
+                    loadDriverPin(); // Load Pin too
                 }
             } else {
-                // Logged out
                 document.getElementById('login-overlay').style.display = 'flex';
                 document.getElementById('admin-content').style.display = 'none';
             }
@@ -208,24 +237,19 @@
                 btn.innerText = "Verbinde...";
                 btn.disabled = true;
 
-                // Same Credentials as Admin Coupons
                 const email = "webmaster@zafraneuskirchen.de"; 
                 const secret = "!Zafran2025"; 
 
-                // 1. Try to Login
                 firebase.auth().signInWithEmailAndPassword(email, secret)
                 .catch((error) => {
-                    // 2. If User Not Found, CREATE the user automatically
                     if (error.code === 'auth/user-not-found') {
-                        console.log("User missing. Creating now...");
                         return firebase.auth().createUserWithEmailAndPassword(email, secret);
                     }
-                    throw error; // Throw other errors
+                    throw error;
                 })
                 .catch((error) => {
-                    // 3. Handle Actual Failures
                     console.error("Login Error:", error);
-                    err.innerHTML = `Fehler: ${error.message}<br><small>Code: ${error.code}</small>`;
+                    err.innerHTML = `Fehler: ${error.message}`;
                     btn.innerText = "Einloggen";
                     btn.disabled = false;
                 });
@@ -240,14 +264,27 @@
         document.getElementById('filter-status').addEventListener('change', loadReservations);
     });
 
+    // Helper to set Today's Date
+    function setTodayDate() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        document.getElementById('filter-date').value = `${yyyy}-${mm}-${dd}`;
+    }
+
     // --- 3. DATA LOADING ---
 
-    // Load by Date (Default)
+    // NEW: Reset Date to Today AND Load
+    function resetAndLoadToday() {
+        setTodayDate(); // Set picker to today
+        loadReservations(); // Load data for today
+    }
+
     function loadReservations() {
         const dateVal = document.getElementById('filter-date').value;
         const statusVal = document.getElementById('filter-status').value;
 
-        // Visual Reset
         renderLoading();
 
         let query = db.collection("reservations").where("date", "==", dateVal);
@@ -258,14 +295,10 @@
         executeFetch(query, `Keine Reservierungen für ${dateVal} gefunden.`);
     }
 
-    // Load ALL (Debug/Overview)
     function loadAllReservations() {
         document.getElementById('filter-date').value = ""; // Clear date input
         renderLoading();
-
-        // Simple fetch of everything, ordered by date desc
         let query = db.collection("reservations").orderBy("date", "desc");
-        
         executeFetch(query, "Keine Reservierungen in der Datenbank.");
     }
 
@@ -293,33 +326,29 @@
                 list.push({ id: doc.id, ...doc.data() });
             });
 
-            // Sort: Date Descending, then Time Ascending
+            // Sort: Date Desc, Time Asc
             list.sort((a, b) => {
                 if (b.date !== a.date) return b.date.localeCompare(a.date);
                 return a.time.localeCompare(b.time);
             });
 
             list.forEach(res => {
-                // Count
                 let g = parseInt(res.guests) || 0;
                 if(res.status === 'confirmed') totalGuests += g;
 
-                // Badges
                 let sClass = 'status-pending';
                 let sText = res.status;
                 if(res.status === 'confirmed') { sClass = 'status-confirmed'; sText = 'Bestätigt'; }
                 if(res.status === 'cancelled') { sClass = 'status-cancelled'; sText = 'Storniert'; }
 
-                // Actions
                 let actions = `<button class="btn-action btn-delete" onclick="deleteRes('${res.id}', '${res.name}')">✕</button>`;
                 if(res.status === 'pending') {
                     let email = res.email || '';
                     actions = `<button class="btn-action btn-accept" onclick="confirmRes('${res.id}', '${email}', '${res.name}', '${res.date}', '${res.time}', '${res.guests}')">✔</button> ` + actions;
                 }
 
-                // Date Format
                 let dParts = res.date.split('-'); 
-                let dDisplay = `${dParts[2]}.${dParts[1]}.${dParts[0]}`; // DD.MM.YYYY
+                let dDisplay = `${dParts[2]}.${dParts[1]}.${dParts[0]}`; 
 
                 tbody.innerHTML += `
                     <tr style="${res.status==='cancelled'?'opacity:0.5':''}">
@@ -337,13 +366,41 @@
         })
         .catch((err) => {
             console.error("Fetch Error:", err);
-            let msg = err.message;
-            if(err.code === 'permission-denied') msg = "Zugriff verweigert. (Sind Sie eingeloggt?)";
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Fehler: ${msg}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Fehler: ${err.message}</td></tr>`;
         });
     }
 
-    // --- 4. ACTIONS ---
+    // --- 4. DRIVER PIN LOGIC (NEW) ---
+    function loadDriverPin() {
+        db.collection('settings').doc('driver_auth').get().then(doc => {
+            if(doc.exists) {
+                document.getElementById('driver-pin-input').value = doc.data().pin || "";
+            } else {
+                document.getElementById('driver-pin-input').value = "";
+            }
+        });
+    }
+
+    window.saveDriverPin = function() {
+        const newPin = document.getElementById('driver-pin-input').value.trim();
+        const statusEl = document.getElementById('pin-status');
+        
+        if(newPin.length < 4) {
+            statusEl.innerText = "PIN muss mind. 4 Zeichen haben.";
+            statusEl.className = "message-box error-msg";
+            return;
+        }
+
+        db.collection('settings').doc('driver_auth').set({ pin: newPin })
+        .then(() => {
+            statusEl.innerText = "PIN erfolgreich gespeichert!";
+            statusEl.className = "message-box success-msg";
+            setTimeout(() => statusEl.innerText = "", 3000);
+        })
+        .catch(e => alert("Fehler: " + e.message));
+    };
+
+    // --- 5. RESERVATION ACTIONS ---
     window.confirmRes = function(id, email, name, date, time, guests) {
         if(!confirm(`Reservierung für ${name} bestätigen?`)) return;
         
