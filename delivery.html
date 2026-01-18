@@ -243,27 +243,67 @@ select#pickup-time:focus {
             color: #000;
         }
 
-        /* --- CHECKOUT BUTTON BOX STYLE --- */
-#checkout-buttons-wrapper {
-    background-color: #1a1a1a;       /* Dark background */
-    border: 2px solid #D4AF37;       /* Gold Frame */
-    padding: 25px;                   /* Inner spacing */
-    margin-top: 30px;                /* Space above the box */
-    margin-bottom: 10px;
-    border-radius: 8px;              /* Rounded corners */
-    text-align: center;              /* Center the button */
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.15); /* Soft Gold Glow */
+
+/* 1. Unified Style for WhatsApp & Privacy Boxes */
+.consent-box {
+    background: rgba(255,255,255,0.05); 
+    padding: 12px; 
+    border-radius: 5px; 
+    border: 1px solid #333; 
+    margin-top: 15px; 
+    display: flex; 
+    align-items: flex-start; 
+    gap: 10px;
+}
+.consent-box input {
+    width: 20px; 
+    height: 20px; 
+    accent-color: #D4AF37; /* Gold Checkbox */
+    margin-top: 2px;
+}
+.consent-box label {
+    font-size: 0.9rem; 
+    color: #ccc; 
+    line-height: 1.4;
+    cursor: pointer;
 }
 
-/* Optional: Add a label above the button inside the box */
-#checkout-buttons-wrapper::before {
-    content: "Abschließen";
-    display: block;
-    color: #888;
-    font-size: 0.8rem;
+/* 2. Checkout Button Area (Cleaned Up) */
+#checkout-buttons-wrapper {
+    margin-top: 30px;
+    margin-bottom: 20px;
+    text-align: center;
+    /* Removed the outer border and "Abschließen" text to clean the mess */
+}
+
+/* 3. The Button Itself (Highlighted with Border) */
+#firebase-btn {
+    background-color: #1a1a1a;      /* Dark Background */
+    color: #D4AF37;                 /* Gold Text */
+    border: 2px solid #D4AF37;      /* GOLD BORDER ADDED HERE */
+    padding: 18px 25px;
+    font-size: 1.1rem;
+    font-weight: bold;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 15px;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+    transition: all 0.3s ease;
+}
+
+#firebase-btn:hover:not(:disabled) {
+    background-color: #D4AF37;
+    color: #000;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+#firebase-btn:disabled {
+    border-color: #444;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
 }
     </style>
 </head>
@@ -1851,40 +1891,30 @@ select#pickup-time:focus {
             </label>
         </div>
     </div>
-    <div class="consent-checkbox">
+    <div class="consent-box">
+        <input type="checkbox" id="whatsapp-consent" checked>
+        <label for="whatsapp-consent">
+            Ich stimme zu, dass der Fahrer mich per <strong>WhatsApp</strong> über den Lieferstatus informieren darf.
+            <br><small style="color:#888;">(Andernfalls rufen wir Sie nur im Notfall an.)</small>
+        </label>
+    </div>
+
+    <div class="consent-box">
         <input type="checkbox" id="privacy-consent" name="privacy-consent" required>
         <label for="privacy-consent">
-            Ich stimme der <a href="privacy.html" target="_blank">Datenschutzerklärung</a> zu.
+            Ich habe die <a href="privacy.html" target="_blank" style="color:#D4AF37; text-decoration:underline;">Datenschutzerklärung</a> gelesen und stimme zu.
         </label>
     </div>
 
     <div id="checkout-buttons-wrapper">
-        <div class="checkout-buttons">
-            <button type="button" id="firebase-btn" class="checkout-kitchen">
-                Kostenpflichtig Bestellen (Barzahlung)
-            </button>
-        </div>
+        <button type="button" id="firebase-btn" class="checkout-kitchen" disabled>
+            Kostenpflichtig Bestellen (Barzahlung)
+        </button>
     </div>
 </form>
-<div id="order-success-message" style="display:none; text-align:center; padding:30px; background:#1a1a1a; border:2px solid #D4AF37; margin-top:20px; border-radius:10px;">
-    <div style="font-size:50px; color:#D4AF37; margin-bottom:10px;">✓</div>
-    <h3 style="color:#D4AF37; margin:0; text-transform:uppercase; font-size:1.5rem;">Bestellung Empfangen!</h3>
-    
-    <p style="color:white; margin-top:20px; font-size:1.1rem;">Ihr Bestell-PIN:</p>
-    <div style="font-size:3.5rem; font-weight:bold; color:white; letter-spacing:8px; margin:10px 0; font-family:monospace; text-shadow: 0 0 10px rgba(255,255,255,0.3);" id="display-order-pin">----</div>
-    
-    <p style="color:#aaa; font-size:0.9rem; max-width:400px; margin:0 auto; line-height:1.5;">
-        Bitte merken Sie sich diesen PIN.<br>Sie benötigen ihn, um den Status Ihrer Bestellung zu prüfen.
-    </p>
-    
-    <a href="#" id="track-btn-link" class="btn" style="background:#D4AF37; color:black; padding:15px 30px; text-decoration:none; font-weight:bold; display:inline-block; margin-top:25px; border-radius:5px; text-transform:uppercase; font-size:1rem; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);">
-        JETZT LIVE VERFOLGEN
-    </a>
-</div>             
 </div>
            </div>
 </div>
-
 
     <div id="success-modal">
         <div class="success-box">
@@ -1899,13 +1929,9 @@ select#pickup-time:focus {
                 Die durchschnittliche Zubereitungszeit beträgt ca. <strong>30–60 Minuten</strong>.<br>
                 Für eine genaue Abholzeit bitten wir um telefonische Rücksprache:+49 2251 1290950.
             </p>
-
               <button onclick="closeSuccessModal()" class="btn-success-close">Schließen</button>
-
         </div>
-
     </div>
-
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script> 
