@@ -32,6 +32,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     // --- 1. LOAD SETTINGS & CHECK STATUS ---
     await loadSettingsAndHours();
 
+    // --- NEW: LOAD CART MEMORY ---
+    const savedCart = sessionStorage.getItem('zafran_cart');
+    if (savedCart) {
+        try {
+            cart = JSON.parse(savedCart);
+            if(cart.length > 0) {
+                // Update UI immediately if cart exists
+                const countEl = document.getElementById('cart-item-count');
+                const toggleBtn = document.getElementById('cart-toggle-btn');
+                if(countEl) countEl.innerText = cart.reduce((sum, i) => sum + i.quantity, 0);
+                if(toggleBtn) toggleBtn.classList.remove('hidden');
+                // Note: We don't call updateCart() here because the cart overlay isn't open yet
+            }
+        } catch (e) { console.error(e); }
+    }
+    
     // --- Header Scroll Padding ---
     const header = document.querySelector('header');
     function updateScrollPadding() {
@@ -289,6 +305,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         cartItemCountEl.innerText = itemCount;
         cartToggleBtn.classList.toggle('hidden', itemCount === 0);
         addCartItemControls();
+
+        // ADD THIS: Save to Session Storage
+        sessionStorage.setItem('zafran_cart', JSON.stringify(cart)); 
     }
 
     function addCartItemControls() {
@@ -361,6 +380,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         successModal.classList.add('flex'); 
         
         cart = [];
+        sessionStorage.removeItem('zafran_cart');
         currentCoupon = null; 
         if(document.getElementById('coupon-input')) document.getElementById('coupon-input').value = "";
         if(document.getElementById('coupon-message')) document.getElementById('coupon-message').textContent = "";
@@ -392,6 +412,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             const summaryData = generateOrderSummary();
             const orderId = `${isDeliveryPage() ? 'delivery' : 'pickup'}-${new Date().getTime()}`;
             
+            // NEW: Generate 4-Digit Order PIN
+            const orderPin = Math.floor(1000 + Math.random() * 9000).toString();
+
             const orderData = {
                 id: orderId,
                 table: `${formData.name} (${formData.phone})`,
@@ -407,7 +430,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 coupon: summaryData.couponInfo || "None",
                 total: summaryData.finalTotal,
                 status: "new",
-                createdAt: new Date()
+                createdAt: new Date(),
+                
+                // NEW FIELDS
+                whatsappAllowed: formData.whatsappAllowed, 
+                orderPin: orderPin 
             };
 
             firebaseBtn.innerText = "Senden...";
@@ -415,15 +442,45 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             try {
                 await db.collection("orders").doc(orderId).set(orderData);
-                showConfirmationScreen(formData, summaryData); 
+                
+                // 1. Hide the Order Form
+                document.getElementById('order-form').style.display = 'none'; 
+                
+                // 2. Show Success & PIN Area (instead of popup modal)
+                const successMsg = document.getElementById('order-success-message');
+                if(successMsg) {
+                    successMsg.style.display = 'block';
+                    document.getElementById('display-order-pin').innerText = orderPin;
+                    document.getElementById('track-btn-link').href = `tracker.html?id=${orderId}`;
+                    
+                    // Hide Cart Summary elements to clean up view
+                    document.getElementById('cart-items-container').style.display = 'none';
+                    document.getElementById('cart-summary').style.display = 'none';
+                    const cartTitle = document.querySelector('#cart-content h2');
+                    if(cartTitle) cartTitle.style.display = 'none';
+                    const cartSub = document.querySelector('#cart-content p');
+                    if(cartSub) cartSub.style.display = 'none';
+                    const detailsTitle = document.querySelector('#cart-content h3');
+                    if(detailsTitle) detailsTitle.style.display = 'none';
+                    const hrLine = document.querySelector('#cart-content hr');
+                    if(hrLine) hrLine.style.display = 'none';
+                    
+                    // Clear Cart Memory on success
+                    cart = [];
+                    sessionStorage.removeItem('zafran_cart');
+                    updateCart();
+                } else {
+                    // Fallback to old modal if Success Box is missing
+                    showConfirmationScreen(formData, summaryData); 
+                }
+
             } catch (error) {
                 console.error("Error sending order: ", error);
                 alert("Fehler beim Senden. Bitte erneut versuchen.");
-            } finally {
                 firebaseBtn.innerText = "Kostenpflichtig Bestellen";
                 firebaseBtn.disabled = false;
-                toggleCheckoutButtons();
             }
+            // Note: removed 'finally' block to prevent button reset on success
         });
     }
 
@@ -732,6 +789,10 @@ function getFormData() {
     const time = document.getElementById('pickup-time').value;
     const notes = document.getElementById('customer-notes').value;
     
+    // NEW: Get WhatsApp Consent (Default false if element missing)
+    const whatsappConsentEl = document.getElementById('whatsapp-consent');
+    const whatsappAllowed = whatsappConsentEl ? whatsappConsentEl.checked : false;
+
     let address = null;
     if (isDeliveryPage()) {
         address = {
@@ -740,7 +801,8 @@ function getFormData() {
             zip: document.getElementById('delivery-zip').value
         };
     }
-    return { name, phone, time, notes, address };
+    // Return the new field 'whatsappAllowed'
+    return { name, phone, time, notes, address, whatsappAllowed };
 }
 
 function validateForm() {
@@ -767,3 +829,4 @@ function validateForm() {
     }
     return true;
 }
+
