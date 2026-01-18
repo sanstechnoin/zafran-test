@@ -168,7 +168,14 @@
     <div id="map"></div>
 
     <div class="tracker-overlay">
-        
+    <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <input type="text" id="manual-order-input" placeholder="Enter Order # or PIN" 
+                   style="flex:1; background:#333; border:1px solid #444; color:white; padding:12px; border-radius:8px; outline:none; font-family:'Poppins', sans-serif;">
+            <button onclick="manualSearch()" 
+                    style="background:var(--gold); border:none; color:black; padding:0 20px; border-radius:8px; font-weight:bold; cursor:pointer;">
+                <span class="material-icons">search</span>
+            </button>
+        </div>   
         <div class="track-header">
             <div>
                 <div class="order-id" id="display-id">LOADING...</div>
@@ -233,7 +240,9 @@
             messagingSenderId: "1022960860126",
             appId: "1:1022960860126:web:1e06693dea1d0247a0bb4f"
         };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
 
         // --- 2. MAP SETUP ---
@@ -250,29 +259,78 @@
         });
 
         let driverMarker = null;
+        let unsubscribe = null; // Variable to hold the listener
 
         // --- 3. INIT ---
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('id');
 
-        if (!orderId) {
-            document.getElementById('loader').innerHTML = "<h3 style='color:white;'>Invalid Order Link</h3>";
-        } else {
+        if (orderId) {
             initTracker(orderId);
+        } else {
+            // If no ID, just hide loader and show search bar
+            document.getElementById('loader').style.display = 'none';
         }
 
-        // --- 4. LOGIC ---
+        // --- 4. MANUAL SEARCH FUNCTION ---
+        function manualSearch() {
+            const input = document.getElementById('manual-order-input').value.trim();
+            if (!input) return;
+
+            // Show loader while searching
+            document.getElementById('loader').style.display = 'flex';
+            document.getElementById('loader').innerHTML = '<div class="loader-spinner"></div><div style="color:#888;">Searching...</div>';
+
+            // 1. Try finding by Document ID first
+            db.collection("orders").doc(input).get().then((doc) => {
+                if (doc.exists) {
+                    initTracker(input); // Found by ID!
+                } else {
+                    // 2. Not found by ID? Try finding by PIN (orderPin field)
+                    // Note: 'orderPin' is a string field in Firestore
+                    db.collection("orders").where("orderPin", "==", input).limit(1).get()
+                    .then((querySnapshot) => {
+                        if (!querySnapshot.empty) {
+                            // Found by PIN!
+                            const docId = querySnapshot.docs[0].id;
+                            initTracker(docId);
+                        } else {
+                            // 3. Not found at all
+                            document.getElementById('loader').style.display = 'none';
+                            alert("Order not found. Please check your Order ID or PIN.");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error searching:", error);
+                        document.getElementById('loader').style.display = 'none';
+                        alert("Error searching for order.");
+                    });
+                }
+            });
+        }
+
+        // --- 5. TRACKER LOGIC ---
         function initTracker(id) {
-            db.collection("orders").doc(id).onSnapshot((doc) => {
+            // Unsubscribe from previous listener if exists
+            if (unsubscribe) {
+                unsubscribe();
+            }
+
+            // Update URL without reloading (optional, nice for sharing)
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + id;
+            window.history.pushState({path:newUrl},'',newUrl);
+
+            unsubscribe = db.collection("orders").doc(id).onSnapshot((doc) => {
                 document.getElementById('loader').style.display = 'none';
 
                 if (!doc.exists) {
                     document.getElementById('status-title').innerText = "Order Not Found";
+                    document.getElementById('status-sub').innerText = "Please try searching again.";
                     return;
                 }
 
                 const data = doc.data();
-                updateUI(data);
+                updateUI(data, id); // Pass ID to updateUI
 
                 // Map Update (Only if active)
                 if (data.status === 'out_for_delivery' && data.driverLocation) {
@@ -292,8 +350,10 @@
             });
         }
 
-        function updateUI(data) {
-            document.getElementById('display-id').innerText = `ORDER #${orderId.slice(-4).toUpperCase()}`;
+        function updateUI(data, currentId) {
+            // Display Order PIN if available, otherwise the last 4 digits of the ID
+            const displayCode = data.orderPin || currentId.slice(-4);
+            document.getElementById('display-id').innerText = `ORDER #${displayCode.toUpperCase()}`;
             
             if(data.createdAt && data.createdAt.toDate) {
                 const time = data.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -307,7 +367,7 @@
             let badgeText = "Received";
             let badgeClass = "";
 
-            // Reset
+            // Reset Steps
             ['new', 'preparing', 'delivery', 'completed'].forEach(step => {
                 document.getElementById(`step-${step}`).className = 'step';
             });
@@ -406,6 +466,41 @@
         localStorage.setItem('cookieConsent', 'essential');
         document.getElementById('cookie-banner').style.display = 'none';
     }
+
+    function manualSearch() {
+            const input = document.getElementById('manual-order-input').value.trim();
+            if (!input) return;
+
+            // Show loader while searching
+            document.getElementById('loader').style.display = 'flex';
+            document.getElementById('loader').innerHTML = '<div class="loader-spinner"></div><div style="color:#888;">Searching...</div>';
+
+            // 1. Try finding by Document ID first (direct link style)
+            db.collection("orders").doc(input).get().then((doc) => {
+                if (doc.exists) {
+                    initTracker(input); // Found by ID!
+                } else {
+                    // 2. Not found by ID? Try finding by PIN (orderPin field)
+                    db.collection("orders").where("orderPin", "==", input).limit(1).get()
+                    .then((querySnapshot) => {
+                        if (!querySnapshot.empty) {
+                            // Found by PIN!
+                            const docId = querySnapshot.docs[0].id;
+                            initTracker(docId);
+                        } else {
+                            // 3. Not found at all
+                            document.getElementById('loader').style.display = 'none';
+                            alert("Order not found. Please check your ID or PIN.");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error searching:", error);
+                        document.getElementById('loader').style.display = 'none';
+                        alert("Error searching for order.");
+                    });
+                }
+            });
+        }
 </script>
 </body>
 </html>
