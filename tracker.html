@@ -30,7 +30,7 @@
             background: var(--bg-dark); 
             color: var(--text-main); 
             overflow: hidden; 
-            height: 100dvh; /* Dynamic Height for Mobile Browsers */
+            height: 100dvh; 
             width: 100vw;
         }
 
@@ -50,18 +50,17 @@
             bottom: 0; left: 0; right: 0;
             background: rgba(30, 30, 30, 0.98);
             backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px); /* iOS Blur */
+            -webkit-backdrop-filter: blur(15px);
             border-top-left-radius: 24px;
             border-top-right-radius: 24px;
             padding: 25px 20px;
-            
-            /* iPhone Safe Area (Home Bar) */
             padding-bottom: calc(25px + env(safe-area-inset-bottom));
-            
             box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
             z-index: 1000;
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             border-top: 1px solid rgba(255,255,255,0.1);
+            max-height: 85vh; /* Allow scrolling if receipt is long */
+            overflow-y: auto;
         }
 
         /* HEADER */
@@ -79,17 +78,14 @@
         
         .progress-line-bg {
             position: absolute; top: 14px; 
-            left: 12%; 
-            right: 15%; /* Changed from 12% to 15% to shorten the right side */
-            height: 3px;
-            background: #444; z-index: 0; border-radius: 2px;
+            left: 12%; right: 15%; 
+            height: 3px; background: #444; z-index: 0; border-radius: 2px;
         }
         .progress-line-fill {
             position: absolute; top: 14px; 
-            left: 12%; 
-            width: 0%; /* JS handles width */
-            height: 3px;
-            background: var(--gold); z-index: 0; transition: width 0.6s ease; border-radius: 2px;
+            left: 12%; width: 0%; 
+            height: 3px; background: var(--gold); z-index: 0; 
+            transition: width 0.6s ease; border-radius: 2px;
         }
 
         /* STEPS */
@@ -105,17 +101,37 @@
         
         .step.active .step-icon { background: var(--gold); border-color: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
         .step.completed .step-icon { background: var(--gold); border-color: var(--gold); color: #000; }
-        
         .step-label { font-size: 0.75rem; font-weight: 600; }
 
         /* STATUS TEXT */
-        .status-message { text-align: center; margin-bottom: 15px; }
+        .status-message { text-align: center; margin-bottom: 20px; }
         .status-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; color: #fff; letter-spacing: -0.5px; }
         .status-sub { font-size: 0.95rem; color: #aaa; line-height: 1.4; }
 
+        /* E-RECEIPT (Simplified: No Total) */
+        .receipt-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+        .receipt-title { 
+            font-size: 0.8rem; color: #888; margin-bottom: 15px; 
+            font-weight: 600; text-transform: uppercase; letter-spacing: 1px; 
+            border-bottom: 1px dashed #444; padding-bottom: 10px;
+        }
+        .receipt-item { 
+            display: flex; justify-content: space-between; 
+            margin-bottom: 8px; font-size: 0.95rem; color: #eee; 
+        }
+        .receipt-item span:last-child {
+            color: #aaa; /* Price color slightly dimmer */
+        }
+
         /* DRIVER CARD */
         .driver-info {
-            display: none; /* Shows via JS */
+            display: none; 
             background: #252525; padding: 16px; border-radius: 16px;
             align-items: center; margin-top: 20px; 
             animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -162,23 +178,25 @@
 
     <div class="loader-screen" id="loader">
         <div class="loader-spinner"></div>
-        <div style="color: #888; font-size: 0.9rem; font-weight: 600;">Connecting...</div>
+        <div style="color: #888; font-size: 0.9rem; font-weight: 600;" id="loader-text">Connecting...</div>
     </div>
 
     <div id="map"></div>
 
     <div class="tracker-overlay">
-    <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <input type="text" id="manual-order-input" placeholder="Enter Order # or PIN" 
+        
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <input type="text" id="manual-order-input" placeholder="Bestellnummer eingeben (PIN)" 
                    style="flex:1; background:#333; border:1px solid #444; color:white; padding:12px; border-radius:8px; outline:none; font-family:'Poppins', sans-serif;">
             <button onclick="manualSearch()" 
                     style="background:var(--gold); border:none; color:black; padding:0 20px; border-radius:8px; font-weight:bold; cursor:pointer;">
                 <span class="material-icons">search</span>
             </button>
-        </div>   
+        </div>
+
         <div class="track-header">
             <div>
-                <div class="order-id" id="display-id">LOADING...</div>
+                <div class="order-id" id="display-id">WAITING...</div>
                 <div style="font-size: 0.8rem; color: #666; margin-top:2px;" id="order-time"></div>
             </div>
             <div class="eta-badge" id="eta-badge">Syncing</div>
@@ -207,9 +225,15 @@
         </div>
 
         <div class="status-message">
-            <div class="status-title" id="status-title">Locating Order...</div>
-            <div class="status-sub" id="status-sub">Please wait a moment.</div>
+            <div class="status-title" id="status-title">Track your Order</div>
+            <div class="status-sub" id="status-sub">Enter your PIN above or use your link.</div>
         </div>
+
+        <div id="receipt-area" class="receipt-container" style="display:none;">
+            <div class="receipt-title">Bestellübersicht</div>
+            <div id="receipt-items-list">
+                </div>
+            </div>
 
         <div class="driver-info" id="driver-card">
             <div class="driver-avatar">
@@ -247,8 +271,6 @@
 
         // --- 2. MAP SETUP ---
         const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([50.661, 6.786], 13);
-        
-        // CartoDB Dark Matter (Fast & Mobile Friendly)
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
         const carIcon = L.divIcon({
@@ -259,7 +281,7 @@
         });
 
         let driverMarker = null;
-        let unsubscribe = null; // Variable to hold the listener
+        let unsubscribe = null; 
 
         // --- 3. INIT ---
         const urlParams = new URLSearchParams(window.location.search);
@@ -268,90 +290,121 @@
         if (orderId) {
             initTracker(orderId);
         } else {
-            // If no ID, just hide loader and show search bar
             document.getElementById('loader').style.display = 'none';
         }
 
-        // --- 4. MANUAL SEARCH FUNCTION ---
+        // --- 4. MANUAL SEARCH ---
         function manualSearch() {
             const input = document.getElementById('manual-order-input').value.trim();
             if (!input) return;
 
-            // Show loader while searching
             document.getElementById('loader').style.display = 'flex';
-            document.getElementById('loader').innerHTML = '<div class="loader-spinner"></div><div style="color:#888;">Searching...</div>';
+            document.getElementById('loader-text').innerText = 'Searching...';
 
-            // 1. Try finding by Document ID first
-            db.collection("orders").doc(input).get().then((doc) => {
-                if (doc.exists) {
-                    initTracker(input); // Found by ID!
+            // Try "orders" first (Active)
+            searchCollection("orders", input, (foundId, data) => {
+                if(foundId) {
+                    initTracker(foundId);
                 } else {
-                    // 2. Not found by ID? Try finding by PIN (orderPin field)
-                    // Note: 'orderPin' is a string field in Firestore
-                    db.collection("orders").where("orderPin", "==", input).limit(1).get()
-                    .then((querySnapshot) => {
-                        if (!querySnapshot.empty) {
-                            // Found by PIN!
-                            const docId = querySnapshot.docs[0].id;
-                            initTracker(docId);
+                    // Try "archived_orders" if not found (Closed)
+                    searchCollection("archived_orders", input, (archivedId, archivedData) => {
+                        if(archivedId) {
+                            initTracker(archivedId, "archived_orders");
                         } else {
-                            // 3. Not found at all
+                            // Not found in either
                             document.getElementById('loader').style.display = 'none';
-                            alert("Order not found. Please check your Order ID or PIN.");
+                            setStatusMessage("Order Not Found", "Please check your PIN or ID.");
                         }
-                    })
-                    .catch((error) => {
-                        console.error("Error searching:", error);
-                        document.getElementById('loader').style.display = 'none';
-                        alert("Error searching for order.");
                     });
                 }
             });
         }
 
-        // --- 5. TRACKER LOGIC ---
-        function initTracker(id) {
-            // Unsubscribe from previous listener if exists
-            if (unsubscribe) {
-                unsubscribe();
-            }
-
-            // Update URL without reloading (optional, nice for sharing)
-            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + id;
-            window.history.pushState({path:newUrl},'',newUrl);
-
-            unsubscribe = db.collection("orders").doc(id).onSnapshot((doc) => {
-                document.getElementById('loader').style.display = 'none';
-
-                if (!doc.exists) {
-                    document.getElementById('status-title').innerText = "Order Not Found";
-                    document.getElementById('status-sub').innerText = "Please try searching again.";
-                    return;
+        // Helper to search ID or PIN in a specific collection
+        function searchCollection(collectionName, input, callback) {
+            // 1. Try Doc ID
+            db.collection(collectionName).doc(input).get().then((doc) => {
+                if (doc.exists) {
+                    callback(input, doc.data());
+                } else {
+                    // 2. Try PIN
+                    db.collection(collectionName).where("orderPin", "==", input).limit(1).get()
+                    .then((querySnapshot) => {
+                        if (!querySnapshot.empty) {
+                            callback(querySnapshot.docs[0].id, querySnapshot.docs[0].data());
+                        } else {
+                            callback(null, null);
+                        }
+                    }).catch(err => {
+                        console.error(err);
+                        callback(null, null);
+                    });
                 }
-
-                const data = doc.data();
-                updateUI(data, id); // Pass ID to updateUI
-
-                // Map Update (Only if active)
-                if (data.status === 'out_for_delivery' && data.driverLocation) {
-                    const lat = data.driverLocation.lat;
-                    const lng = data.driverLocation.lng;
-
-                    document.body.classList.add('map-active');
-
-                    if (!driverMarker) {
-                        driverMarker = L.marker([lat, lng], {icon: carIcon}).addTo(map);
-                        map.flyTo([lat, lng], 15, { animate: true, duration: 1.5 });
-                    } else {
-                        driverMarker.setLatLng([lat, lng]);
-                        map.panTo([lat, lng]);
-                    }
-                }
+            }).catch(err => {
+                console.error(err);
+                callback(null, null);
             });
         }
 
+        function setStatusMessage(title, sub) {
+            document.getElementById('status-title').innerText = title;
+            document.getElementById('status-sub').innerText = sub;
+            // Clear other UI
+            document.getElementById('receipt-area').style.display = 'none';
+            document.getElementById('display-id').innerText = "---";
+        }
+
+        // --- 5. TRACKER LOGIC ---
+        function initTracker(id, collection = "orders") {
+            if (unsubscribe) unsubscribe();
+
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + id;
+            window.history.pushState({path:newUrl},'',newUrl);
+
+            // If it's active order, use onSnapshot (Live Updates)
+            if(collection === "orders") {
+                unsubscribe = db.collection("orders").doc(id).onSnapshot((doc) => {
+                    handleDocUpdate(doc, id, true);
+                });
+            } else {
+                // If it's archived, just get() once (Archived orders don't move)
+                db.collection("archived_orders").doc(id).get().then((doc) => {
+                    handleDocUpdate(doc, id, false);
+                });
+            }
+        }
+
+        function handleDocUpdate(doc, id, isLive) {
+            document.getElementById('loader').style.display = 'none';
+
+            if (!doc.exists) {
+                setStatusMessage("Order Not Found", "This order may have been removed.");
+                return;
+            }
+
+            const data = doc.data();
+            updateUI(data, id);
+
+            // MAP LOGIC
+            // If archived/completed, we don't show the live car
+            if (isLive && data.status === 'out_for_delivery' && data.driverLocation) {
+                const lat = data.driverLocation.lat;
+                const lng = data.driverLocation.lng;
+                document.body.classList.add('map-active');
+
+                if (!driverMarker) {
+                    driverMarker = L.marker([lat, lng], {icon: carIcon}).addTo(map);
+                    map.flyTo([lat, lng], 15, { animate: true, duration: 1.5 });
+                } else {
+                    driverMarker.setLatLng([lat, lng]);
+                    map.panTo([lat, lng]);
+                }
+            } else {
+                document.body.classList.remove('map-active');
+            }
+        }
+
         function updateUI(data, currentId) {
-            // Display Order PIN if available, otherwise the last 4 digits of the ID
             const displayCode = data.orderPin || currentId.slice(-4);
             document.getElementById('display-id').innerText = `ORDER #${displayCode.toUpperCase()}`;
             
@@ -360,6 +413,27 @@
                 document.getElementById('order-time').innerText = `Time: ${time}`;
             }
 
+            // --- BUILD RECEIPT (ITEMS ONLY - NO TOTAL) ---
+            const receiptArea = document.getElementById('receipt-area');
+            const receiptList = document.getElementById('receipt-items-list');
+            
+            if(data.items && data.items.length > 0) {
+                receiptList.innerHTML = "";
+                data.items.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'receipt-item';
+                    row.innerHTML = `
+                        <span>${item.quantity}x ${item.name}</span>
+                        <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                    `;
+                    receiptList.appendChild(row);
+                });
+                receiptArea.style.display = 'block';
+            } else {
+                receiptArea.style.display = 'none';
+            }
+
+            // --- PROGRESS BAR ---
             const status = data.status; 
             let progress = 0;
             let title = "Received";
@@ -367,7 +441,6 @@
             let badgeText = "Received";
             let badgeClass = "";
 
-            // Reset Steps
             ['new', 'preparing', 'delivery', 'completed'].forEach(step => {
                 document.getElementById(`step-${step}`).className = 'step';
             });
@@ -376,19 +449,11 @@
                 progress = 12;
                 document.getElementById('step-new').classList.add('active');
             } 
-            else if (status === 'preparing') {
-                progress = 37;
-                title = "Cooking";
-                sub = "Our chef is preparing your meal.";
-                badgeText = "Cooking";
-                document.getElementById('step-new').classList.add('completed');
-                document.getElementById('step-preparing').classList.add('active');
-            }
-            else if (status === 'ready') {
-                progress = 62;
-                title = "Packing";
-                sub = "Your food is ready & hot.";
-                badgeText = "Packing";
+            else if (status === 'preparing' || status === 'ready') {
+                progress = status === 'ready' ? 62 : 37;
+                title = status === 'ready' ? "Packing" : "Cooking";
+                sub = status === 'ready' ? "Your food is ready & hot." : "Our chef is preparing your meal.";
+                badgeText = status === 'ready' ? "Packing" : "Cooking";
                 document.getElementById('step-new').classList.add('completed');
                 document.getElementById('step-preparing').classList.add('active');
             }
@@ -398,25 +463,21 @@
                 sub = "Track the car on the map.";
                 badgeText = "LIVE";
                 badgeClass = "live";
-                
                 document.getElementById('step-new').classList.add('completed');
                 document.getElementById('step-preparing').classList.add('completed');
                 document.getElementById('step-delivery').classList.add('active');
                 document.getElementById('driver-card').style.display = 'flex';
             }
-            else if (status === 'completed') {
+            else if (status === 'completed' || status === 'archived') {
                 progress = 100;
                 title = "Delivered";
                 sub = "Enjoy your meal! 🍕";
                 badgeText = "DONE";
                 document.getElementById('eta-badge').style.background = '#4CAF50';
                 document.getElementById('eta-badge').style.color = '#fff';
-
                 document.querySelectorAll('.step').forEach(el => el.classList.add('completed'));
                 document.getElementById('step-completed').classList.add('active');
-                
                 document.getElementById('driver-card').style.display = 'none';
-                document.body.classList.remove('map-active');
             }
 
             document.getElementById('progress-fill').style.width = `${progress}%`;
@@ -427,80 +488,36 @@
             badge.className = `eta-badge ${badgeClass}`;
         }
     </script>
+
     <div id="cookie-banner" style="position:fixed; bottom:0; left:0; width:100%; background:#111; color:white; padding:20px; border-top:2px solid #D4AF37; z-index:10000; display:none; box-shadow: 0 -5px 20px rgba(0,0,0,0.8);">
-    <div style="max-width: 1200px; margin: 0 auto; display:flex; flex-direction:column; gap:15px; align-items:center; text-align:center;">
-        
-        <h3 style="margin:0; color:#D4AF37;">🍪 Datenschutzeinstellungen</h3>
-        <p style="font-size:0.9rem; color:#ccc; margin:0;">
-            Wir nutzen Cookies und externe Dienste (Google Fonts, Firebase, OpenStreetMap), um unsere Website zu betreiben. 
-            Einige sind technisch notwendig, andere helfen uns, unser Angebot zu verbessern.
-            <br>
-            <a href="privacy.html" style="color:#fff; text-decoration:underline;">Mehr erfahren</a> | 
-            <a href="imprint.html" style="color:#fff; text-decoration:underline;">Impressum</a>
-        </p>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <button onclick="acceptAllCookies()" style="background:#D4AF37; color:black; border:none; padding:10px 25px; border-radius:5px; font-weight:bold; cursor:pointer;">Alle Akzeptieren</button>
-            <button onclick="acceptEssentialCookies()" style="background:#333; color:white; border:1px solid #666; padding:10px 25px; border-radius:5px; cursor:pointer;">Nur Notwendige</button>
+        <div style="max-width: 1200px; margin: 0 auto; display:flex; flex-direction:column; gap:15px; align-items:center; text-align:center;">
+            <h3 style="margin:0; color:#D4AF37;">🍪 Datenschutzeinstellungen</h3>
+            <p style="font-size:0.9rem; color:#ccc; margin:0;">
+                Wir nutzen Cookies und externe Dienste (Google Fonts, Firebase, OpenStreetMap), um unsere Website zu betreiben. 
+                Einige sind technisch notwendig, andere helfen uns, unser Angebot zu verbessern.
+                <br>
+                <a href="privacy.html" style="color:#fff; text-decoration:underline;">Mehr erfahren</a> | 
+                <a href="imprint.html" style="color:#fff; text-decoration:underline;">Impressum</a>
+            </p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+                <button onclick="acceptAllCookies()" style="background:#D4AF37; color:black; border:none; padding:10px 25px; border-radius:5px; font-weight:bold; cursor:pointer;">Alle Akzeptieren</button>
+                <button onclick="acceptEssentialCookies()" style="background:#333; color:white; border:1px solid #666; padding:10px 25px; border-radius:5px; cursor:pointer;">Nur Notwendige</button>
+            </div>
         </div>
-
     </div>
-</div>
 
-<script>
-    // Check if user already decided
-    if (!localStorage.getItem('cookieConsent')) {
-        document.getElementById('cookie-banner').style.display = 'block';
-    }
-
-    function acceptAllCookies() {
-        localStorage.setItem('cookieConsent', 'all');
-        document.getElementById('cookie-banner').style.display = 'none';
-        // Only load map if the function exists (prevents errors on other pages)
-        if (typeof loadMap === 'function') {
-        loadMap();
+    <script>
+        if (!localStorage.getItem('cookieConsent')) {
+            document.getElementById('cookie-banner').style.display = 'block';
         }
-    }
-
-    function acceptEssentialCookies() {
-        localStorage.setItem('cookieConsent', 'essential');
-        document.getElementById('cookie-banner').style.display = 'none';
-    }
-
-    function manualSearch() {
-            const input = document.getElementById('manual-order-input').value.trim();
-            if (!input) return;
-
-            // Show loader while searching
-            document.getElementById('loader').style.display = 'flex';
-            document.getElementById('loader').innerHTML = '<div class="loader-spinner"></div><div style="color:#888;">Searching...</div>';
-
-            // 1. Try finding by Document ID first (direct link style)
-            db.collection("orders").doc(input).get().then((doc) => {
-                if (doc.exists) {
-                    initTracker(input); // Found by ID!
-                } else {
-                    // 2. Not found by ID? Try finding by PIN (orderPin field)
-                    db.collection("orders").where("orderPin", "==", input).limit(1).get()
-                    .then((querySnapshot) => {
-                        if (!querySnapshot.empty) {
-                            // Found by PIN!
-                            const docId = querySnapshot.docs[0].id;
-                            initTracker(docId);
-                        } else {
-                            // 3. Not found at all
-                            document.getElementById('loader').style.display = 'none';
-                            alert("Order not found. Please check your ID or PIN.");
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Error searching:", error);
-                        document.getElementById('loader').style.display = 'none';
-                        alert("Error searching for order.");
-                    });
-                }
-            });
+        function acceptAllCookies() {
+            localStorage.setItem('cookieConsent', 'all');
+            document.getElementById('cookie-banner').style.display = 'none';
         }
-</script>
+        function acceptEssentialCookies() {
+            localStorage.setItem('cookieConsent', 'essential');
+            document.getElementById('cookie-banner').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
