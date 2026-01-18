@@ -279,7 +279,7 @@
 
         const carIcon = L.divIcon({
             className: 'custom-car',
-            html: '<div style="font-size:32px; line-height:1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🚗</div>',
+            html: '<div style="font-size:32px; line-height:1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🚴🏼</div>',
             iconSize: [32, 32],
             iconAnchor: [16, 16]
         });
@@ -315,7 +315,6 @@
                         if(archivedId) {
                             initTracker(archivedId, "archived_orders");
                         } else {
-                            // Not found in either
                             document.getElementById('loader').style.display = 'none';
                             setStatusMessage("Nicht gefunden", "Bitte prüfen Sie PIN oder ID.");
                         }
@@ -353,9 +352,20 @@
         function setStatusMessage(title, sub) {
             document.getElementById('status-title').innerText = title;
             document.getElementById('status-sub').innerText = sub;
-            // Clear other UI
+            // Clear UI
             document.getElementById('receipt-area').style.display = 'none';
             document.getElementById('display-id').innerText = "---";
+            document.getElementById('order-time').innerText = "";
+            document.getElementById('eta-badge').innerText = "---";
+            document.getElementById('eta-badge').style.background = "#333";
+            
+            // RESET VISUALS (Fixes the red line issue)
+            document.getElementById('progress-fill').style.width = '0%';
+            ['new', 'preparing', 'delivery', 'completed'].forEach(step => {
+                const el = document.getElementById(`step-${step}`);
+                el.className = 'step';
+                el.querySelector('.step-icon').innerHTML = getStepIcon(step); 
+            });
         }
 
         // --- 5. TRACKER LOGIC ---
@@ -382,16 +392,33 @@
             document.getElementById('loader').style.display = 'none';
 
             if (!doc.exists) {
-                setStatusMessage("Nicht gefunden", "Bestellung existiert nicht mehr.");
+                // IMPORTANT: If live doc disappears, check archive before showing error
+                if (isLive) {
+                    console.log("Order disappeared from active, checking archive...");
+                    db.collection("archived_orders").doc("archive-" + id).get().then((archivedDoc) => {
+                        if (archivedDoc.exists) {
+                            initTracker("archive-" + id, "archived_orders");
+                        } else {
+                            // Also try searching original ID in archive just in case
+                            db.collection("archived_orders").doc(id).get().then((backupDoc) => {
+                                if(backupDoc.exists) {
+                                    initTracker(id, "archived_orders");
+                                } else {
+                                    setStatusMessage("Nicht gefunden", "Bestellung existiert nicht mehr.");
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    setStatusMessage("Nicht gefunden", "Bestellung existiert nicht mehr.");
+                }
                 return;
             }
 
             const data = doc.data();
-            console.log("Tracker Update:", data.status); // Debugging
             updateUI(data, id);
 
             // MAP LOGIC
-            // If active and out for delivery
             if (isLive && data.status === 'out_for_delivery' && data.driverLocation) {
                 const lat = data.driverLocation.lat;
                 const lng = data.driverLocation.lng;
@@ -418,7 +445,7 @@
                 document.getElementById('order-time').innerText = `Zeit: ${time}`;
             }
 
-            // --- BUILD RECEIPT (ITEMS ONLY - NO TOTAL) ---
+            // --- BUILD RECEIPT ---
             const receiptArea = document.getElementById('receipt-area');
             const receiptList = document.getElementById('receipt-items-list');
             
@@ -438,41 +465,37 @@
                 receiptArea.style.display = 'none';
             }
 
-            // --- PROGRESS BAR & STATUS ---
+            // --- STATUS ---
             const status = data.status; 
             let progress = 0;
             let title = "Empfangen";
             let sub = "Bestellung ist eingegangen.";
             let badgeText = "Empfangen";
             let badgeClass = "";
-            let barColor = "#D4AF37"; // Default Gold
+            let barColor = "#D4AF37"; 
 
-            // 1. Reset Steps first
+            // 1. Reset
             ['new', 'preparing', 'delivery', 'completed'].forEach(step => {
                 const el = document.getElementById(`step-${step}`);
                 el.className = 'step';
-                // Reset icon content
                 el.querySelector('.step-icon').innerHTML = getStepIcon(step); 
             });
             document.getElementById('driver-card').style.display = 'none';
 
-            // 2. Apply Logic
+            // 2. Logic
             if (status === 'cancelled') {
-                // CANCELLED STATE
                 progress = 100;
                 title = "Storniert";
                 sub = "Diese Bestellung wurde abgelehnt/storniert.\nBitte rufen Sie uns an: +49 2251 1290950";
                 badgeText = "Storniert";
                 badgeClass = "cancelled";
-                barColor = "#f44336"; // Red
+                barColor = "#f44336"; 
 
-                // Visuals for Cancelled
                 document.querySelectorAll('.step').forEach(el => el.classList.add('cancelled'));
-                // Change icons to 'block'
                 document.querySelectorAll('.step-icon span').forEach(icon => icon.innerText = 'block');
                 document.body.classList.remove('map-active');
             } 
-            else if (status === 'completed' || status === 'archived') {
+            else if (status === 'completed' || status === 'archived' || status === 'paid') {
                 progress = 100;
                 title = "Zugestellt";
                 sub = "Guten Appetit! 🍕";
@@ -512,12 +535,11 @@
                 document.getElementById('step-preparing').classList.add('active');
             }
             else {
-                // Default 'new'
                 progress = 12;
                 document.getElementById('step-new').classList.add('active');
             }
 
-            // 3. Update DOM Elements
+            // 3. Update DOM
             document.getElementById('progress-fill').style.width = `${progress}%`;
             document.getElementById('progress-fill').style.background = barColor;
             document.getElementById('status-title').innerText = title;
@@ -526,8 +548,7 @@
             badge.innerText = badgeText;
             badge.className = `eta-badge ${badgeClass}`;
 
-            // Badge Color Overrides
-            if(status !== 'completed' && status !== 'archived') {
+            if(status !== 'completed' && status !== 'archived' && status !== 'paid') {
                  if(badgeClass === 'cancelled') {
                      badge.style.background = '#f44336';
                      badge.style.color = 'white';
@@ -541,7 +562,6 @@
             }
         }
 
-        // Helper to reset icons back to original
         function getStepIcon(step) {
             if(step === 'new') return '<span class="material-icons" style="font-size:16px">receipt</span>';
             if(step === 'preparing') return '<span class="material-icons" style="font-size:16px">soup_kitchen</span>';
