@@ -20,13 +20,19 @@ let watchId = null;
 // --- 3. LOGIN & PIN LOGIC ---
 document.addEventListener("DOMContentLoaded", () => {
     
-    // A. Anonymous Login (REQUIRED to see database)
+    // A. Start Anonymous Login
     firebase.auth().signInAnonymously().catch(e => console.error("Auth Error:", e));
 
-    // B. Check if already logged in via PIN
-    if (sessionStorage.getItem('driver_authorized') === 'true') {
-        showDriverApp();
-    }
+    // B. MONITOR AUTH STATE (The Fix!)
+    // We only show the app/load orders once Firebase confirms "You are Logged In"
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            // User is logged in! Now check if they entered the PIN.
+            if (sessionStorage.getItem('driver_authorized') === 'true') {
+                showDriverApp();
+            }
+        }
+    });
 
     // C. Handle PIN Submit
     document.getElementById('pin-form').addEventListener('submit', (e) => {
@@ -43,9 +49,16 @@ document.addEventListener("DOMContentLoaded", () => {
             .then((doc) => {
                 if (doc.exists && doc.data().pin === inputPin) {
                     sessionStorage.setItem('driver_authorized', 'true');
-                    showDriverApp();
+                    
+                    // If auth is ready, show app. If not, onAuthStateChanged will handle it.
+                    if(firebase.auth().currentUser) {
+                        showDriverApp();
+                    } else {
+                        // Wait for auth...
+                        btn.innerText = "Connecting...";
+                    }
                 } else {
-                    err.textContent = "Falscher PIN!";
+                    err.textContent = "Wrong PIN!";
                     btn.innerText = "ENTER";
                     btn.disabled = false;
                     document.getElementById('driver-pin').value = "";
@@ -53,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch((error) => {
                 console.error("Error checking PIN:", error);
-                err.textContent = "Verbindungsfehler.";
+                err.textContent = "Connection Error: " + error.message;
                 btn.innerText = "ENTER";
                 btn.disabled = false;
             });
@@ -63,7 +76,9 @@ document.addEventListener("DOMContentLoaded", () => {
 function showDriverApp() {
     document.getElementById('login-overlay').style.display = 'none';
     document.getElementById('driver-app').style.display = 'block';
-    initOrderListener(); // Start listening ONLY after PIN is correct
+    
+    // START LISTENING FOR ORDERS
+    initOrderListener();
 }
 
 window.logout = function() {
@@ -74,7 +89,9 @@ window.logout = function() {
 
 // --- 4. MAIN LISTENER (Real-Time Updates) ---
 function initOrderListener() {
-    // IMPORTANT: added "cooked" to the list so Waiter actions don't hide the order
+    console.log("Starting Order Listener...");
+    
+    // Query: Delivery orders that are NOT completed
     db.collection("orders")
         .where("orderType", "==", "delivery")
         .where("status", "in", ["preparing", "ready", "cooked", "out_for_delivery"]) 
@@ -86,7 +103,7 @@ function initOrderListener() {
                 driverContainer.innerHTML = `
                     <div class="empty-state">
                         <span class="material-icons" style="font-size: 64px; opacity:0.3;">check_circle</span>
-                        <p>Keine offenen Lieferungen.</p>
+                        <p>No active deliveries.</p>
                     </div>`;
                 return;
             }
@@ -99,8 +116,21 @@ function initOrderListener() {
             });
         }, (error) => {
             console.error("Firebase Error:", error);
+            
+            // ERROR 1: PERMISSION DENIED (Auth/Rule issue)
             if(error.code === 'permission-denied') {
-                alert("Fehler: Zugriff verweigert. Bitte Seite neu laden.");
+                driverContainer.innerHTML = `<p style="color:red; text-align:center; padding:20px;">⛔ Access Denied.<br>Please reload or check PIN.</p>`;
+            }
+            
+            // ERROR 2: INDEX MISSING (Common with complex queries)
+            if(error.message.includes("index")) {
+                const link = error.message.match(/https:\/\/[^\s]+/)[0];
+                driverContainer.innerHTML = `
+                    <div style="background:rgba(255,0,0,0.2); padding:15px; border:1px solid red; text-align:center;">
+                        <h3>⚠️ System Setup Required</h3>
+                        <p>The database needs an index for this query.</p>
+                        <a href="${link}" target="_blank" style="color:#4285F4; background:white; padding:10px; display:block; border-radius:5px; text-decoration:none; font-weight:bold;">CLICK HERE TO FIX</a>
+                    </div>`;
             }
         });
 }
@@ -112,11 +142,11 @@ function renderDriverCard(id, order, now) {
     const fullAddress = `${addr.street} ${addr.house}, ${addr.zip} Euskirchen`;
     const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
     
-    // Tracking Link
+    // Unique Tracking Link
     const domain = window.location.origin; 
     const trackerUrl = `${domain}/tracker.html?id=${id}`;
 
-    // Overdue Logic
+    // Overdue Check
     let isOverdue = false;
     const timeSlot = order.timeSlot || "";
     if (timeSlot.includes(':')) {
@@ -130,7 +160,7 @@ function renderDriverCard(id, order, now) {
     let statusClass = 'status-preparing';
     let isDisabled = true; 
 
-    // If Kitchen (ready), Waiter (cooked), or Driver (out) -> ENABLE
+    // Enable if Ready, Cooked, or Out
     if (order.status === 'ready' || order.status === 'cooked' || order.status === 'out_for_delivery') {
         statusClass = 'status-ready';
         isDisabled = false; 
@@ -179,10 +209,10 @@ function renderDriverCard(id, order, now) {
             </div>
         </div>
 
-        <div class="payment-info">💰 Zu Kassieren: ${order.total.toFixed(2)} €</div>
+        <div class="payment-info">💰 To Collect: ${order.total.toFixed(2)} €</div>
 
         <button onclick="completeDelivery('${id}')" class="complete-btn" ${isDisabled ? 'disabled style="opacity:0.5"' : ''}>
-            DELIVERED / ABGESCHLOSSEN
+            DELIVERED
         </button>
     </div>
     `;
@@ -261,18 +291,18 @@ function startLiveTracking(orderId) {
 }
 
 
-// --- 7. SHARE & COMPLETE ---
+// --- 7. UTILS ---
 window.nativeShare = function(phone, url) {
     if (navigator.share) {
         navigator.share({
             title: 'Zafran Delivery',
-            text: 'Ihre Bestellung ist unterwegs! Live Tracking:',
+            text: 'Your order is on the way! Track here:',
             url: url
         }).catch((err) => console.log('Share canceled', err));
     } 
     else {
         const cleanPhone = phone.replace(/[^0-9]/g, '');
-        const text = `Hi! 🚗 Ihre Zafran Bestellung ist unterwegs. Live Tracking: ${url}`;
+        const text = `Hi! 🚗 Your Zafran delivery is on the way. Track live here: ${url}`;
         window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
     }
 }
@@ -280,7 +310,7 @@ window.nativeShare = function(phone, url) {
 window.completeDelivery = function(orderId) {
     if(navigator.vibrate) navigator.vibrate(50);
 
-    if(!confirm("💰 Bestätigen: Essen geliefert & Geld kassiert?")) return;
+    if(!confirm("💰 Confirm: Food delivered & Money collected?")) return;
 
     db.collection("orders").doc(orderId).update({
         status: "completed",
