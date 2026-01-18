@@ -56,6 +56,7 @@ const newOrderPopup = document.getElementById('new-order-popup-overlay');
 const popupOrderDetails = document.getElementById('popup-order-details');
 const acceptOrderBtn = document.getElementById('accept-order-btn');
 const masterClearBtn = document.getElementById('master-clear-btn');
+const rejectOrderBtn = document.getElementById('reject-order-btn');
 
 // Waiter Call
 const waiterCallOverlay = document.getElementById('waiter-call-overlay');
@@ -253,7 +254,14 @@ function processNewOrderQueue() {
         <ul>${itemsHtml}</ul>
         ${currentOrder.notes ? `<p style="color:#ff8888;">⚠️ ${currentOrder.notes}</p>` : ''}
     `;
-    
+    // Only show Reject button for Delivery/Pickup
+    if(rejectOrderBtn) {
+        if (currentOrder.orderType === 'pickup' || currentOrder.orderType === 'delivery') {
+            rejectOrderBtn.style.display = 'block';
+        } else {
+            rejectOrderBtn.style.display = 'none'; // Hide for Dine-In tables
+        }
+    }
     newOrderPopup.classList.remove('hidden');
 }
 
@@ -269,6 +277,35 @@ acceptOrderBtn.onclick = () => {
         processNewOrderQueue();
     }
 };
+
+// Reject Button Click Handler
+if(rejectOrderBtn) {
+    rejectOrderBtn.onclick = () => {
+        if (newOrderQueue.length > 0) {
+            // Confirm first to prevent accidents
+            if(!confirm("⚠️ REJECT ORDER?\n\nThis will mark the order as CANCELLED and notify the customer.\n\nAre you sure?")) {
+                return;
+            }
+
+            const orderToReject = newOrderQueue.shift(); // Remove from queue
+            
+            // Update status to 'cancelled'
+            db.collection("orders").doc(orderToReject.id).update({ 
+                status: "cancelled" 
+            }).then(() => {
+                console.log(`Order ${orderToReject.id} cancelled.`);
+            }).catch(err => console.error(err));
+            
+            // Stop sound immediately
+            alertAudio.loop = false;
+            alertAudio.pause();
+            alertAudio.currentTime = 0;
+
+            // Process next order in queue
+            processNewOrderQueue();
+        }
+    };
+}
 
 // --- RENDER DINE-IN ---
 function renderDineInTable(tableId) {
