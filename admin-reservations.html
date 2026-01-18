@@ -142,7 +142,7 @@
                     </tr>
                 </thead>
                 <tbody id="res-body">
-                    <tr><td colspan="7" style="text-align:center;">Lade Daten...</td></tr>
+                    <tr><td colspan="7" style="text-align:center;">Bitte warten... Verbindung wird aufgebaut.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -174,23 +174,29 @@
       appId: "1:1022960860126:web:1e06693dea1d0247a0bb4f"
     };
     
-    firebase.initializeApp(firebaseConfig);
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
     const db = firebase.firestore();
 
-    // --- 2. LOGIN LOGIC ---
+    // --- 2. LOGIN LOGIC (Corrected) ---
     document.addEventListener("DOMContentLoaded", () => {
         // Set Default Date to Today
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('filter-date').value = today;
 
-        // AUTH STATE LISTENER (New robust way to handle refresh)
+        // --- AUTH STATE LISTENER ---
+        // We do NOT use sessionStorage checks manually anymore.
+        // We wait for Firebase to tell us "The user is connected".
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                // If user is already logged in, show content immediately
+                // User is authenticated by Firebase -> Show Content
                 showAdminContent();
             } else {
-                // If not logged in, show login form
+                // User is not authenticated -> Show Login
                 document.getElementById('login-overlay').style.display = 'flex';
+                document.getElementById('admin-content').style.display = 'none';
             }
         });
 
@@ -211,12 +217,9 @@
                 const hiddenPass  = "!Zafran2025"; 
 
                 firebase.auth().signInWithEmailAndPassword(hiddenEmail, hiddenPass)
-                .then(() => {
-                    // Success! onAuthStateChanged will handle the UI switch
-                })
                 .catch((error) => {
                     console.error("Auth Error:", error);
-                    loginError.textContent = "Verbindungsfehler zur Datenbank";
+                    loginError.textContent = "Verbindungsfehler: " + error.message;
                     loginBtn.innerText = "Einloggen";
                     loginBtn.disabled = false;
                 });
@@ -244,7 +247,8 @@
         const tableBody = document.getElementById('res-body');
         const totalCountEl = document.getElementById('total-guests-count');
 
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Lade...</td></tr>';
+        // Only clear and show "Loading" if we are actually fetching
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#888;">Lade...</td></tr>';
 
         let query = db.collection("reservations").where("date", "==", dateFilter);
         
@@ -317,9 +321,12 @@
 
         }).catch(error => {
             console.error("Error loading reservations:", error);
-            // Show more detailed error to user
             let msg = "Fehler beim Laden.";
-            if (error.code === 'permission-denied') msg = "Zugriff verweigert (Auth Fehler).";
+            if (error.code === 'permission-denied') {
+                msg = "Zugriff verweigert. Bitte neu einloggen.";
+                // Optional: Logout if permission denied
+                // firebase.auth().signOut();
+            }
             tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">${msg}</td></tr>`;
         });
     }
