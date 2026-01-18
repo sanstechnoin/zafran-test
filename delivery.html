@@ -1905,6 +1905,22 @@ select#pickup-time:focus {
         </button>
     </div>
 </form>
+<div id="order-success-message" style="display:none; text-align:center; padding:30px; background:#1a1a1a; border:2px solid #D4AF37; margin-top:20px; border-radius:10px; box-shadow: 0 0 30px rgba(0,0,0,0.5);">    
+    <div style="font-size:60px; color:#D4AF37; margin-bottom:10px;">✓</div>
+    <h2 style="color:#D4AF37; margin:0; text-transform:uppercase; font-size:1.8rem; letter-spacing: 1px;">Bestellung Empfangen!</h2>
+    <div style="margin: 30px 0;">
+        <p style="color:#888; font-size:0.9rem; text-transform:uppercase; letter-spacing:2px; margin-bottom:5px;">Order Number (PIN)</p>
+        <div id="display-order-pin" style="font-size:4rem; font-weight:bold; color:white; letter-spacing:8px; font-family:monospace; line-height:1; text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);">----</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; border:1px solid #333; color:#ccc; font-size:0.95rem; line-height:1.6; margin-bottom:25px;">
+        <strong>Gäste-Login-Infos:</strong><br>
+        Speichern Sie die oben angezeigte Bestellnummer zur Live-Verfolgung.<br>
+        Bitte verwenden Sie die untenstehende Schaltfläche, um den Lieferstatus zu verfolgen.
+    </div>
+    <a href="#" id="track-btn-link" target="_blank" style="background:#D4AF37; color:black; padding:15px 30px; text-decoration:none; font-weight:bold; display:block; width:100%; box-sizing:border-box; border-radius:5px; text-transform:uppercase; font-size:1.1rem; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); transition: transform 0.2s;">
+        LIVE TRACKER ÖFFNEN 🚀
+    </a>
+</div>
 </div>
            </div>
 </div>
@@ -1916,12 +1932,6 @@ select#pickup-time:focus {
             <p style="color:#aaa; margin-top:5px;">Vielen Dank für Ihre Bestellung.</p>
             <div id="success-summary-content">
                 </div>
-
-              <p style="color: #bbb; font-size: 0.85rem; margin-top: 10px; margin-bottom: 20px; line-height: 1.4; border-top: 1px solid #444; padding-top: 15px;">
-                <i class="fa fa-clock-o" style="color:var(--gold); margin-right:5px;"></i>
-                Die durchschnittliche Zubereitungszeit beträgt ca. <strong>30–60 Minuten</strong>.<br>
-                Für eine genaue Abholzeit bitten wir um telefonische Rücksprache:+49 2251 1290950.
-            </p>
               <button onclick="closeSuccessModal()" class="btn-success-close">Schließen</button>
         </div>
     </div>
