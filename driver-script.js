@@ -318,19 +318,25 @@ window.nativeShare = function(phone, url) {
     }
 }
 
+// --- 8. COMPLETE DELIVERY (Modified for Cash Control) ---
 window.completeDelivery = function(orderId) {
     if(navigator.vibrate) navigator.vibrate(50);
 
-    if(!confirm("💰 Bestätigen: Essen geliefert & Geld kassiert?")) return;
+    // 1. Ask Driver for confirmation
+    if(!confirm("💰 Hast du das Geld erhalten und das Essen übergeben?")) return;
 
+    // 2. Update Status to 'delivered' (NOT 'completed')
+    // This tells the Waiter: "Driver is back, check the cash."
     db.collection("orders").doc(orderId).update({
-        status: "completed",
-        deliveredAt: firebase.firestore.FieldValue.serverTimestamp()
+        status: "delivered", 
+        driverDeliveredAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
+        // 3. Stop GPS Tracking to save battery
         if(watchId !== null) {
             navigator.geolocation.clearWatch(watchId);
             watchId = null;
         }
+        alert("Status: Geliefert! Bitte Abrechnung beim Kellner machen.");
     }).catch((error) => {
         alert("Error: " + error.message);
     });
