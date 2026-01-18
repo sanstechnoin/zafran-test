@@ -9,7 +9,7 @@
         /* --- KDS THEME VARIABLES --- */
         :root {
             --bg-dark: #1a1a1a;        
-            --card-bg: #2a2a2a;      
+            --card-bg: #2a2a2a;       
             --gold: #D4AF37;
             --text-main: #f0f0f0;
             --text-subtle: #aaa;
@@ -129,6 +129,11 @@
         .holiday-list { margin-top: 15px; max-height: 200px; overflow-y: auto; }
         .holiday-item { background: #111; padding: 10px; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
 
+        /* --- PIN MANAGER STYLES (NEW) --- */
+        .pin-box { display: flex; gap: 10px; justify-content: center; align-items: center; background: #111; padding: 15px; border-radius: 6px; border: 1px solid #333; margin-top: 10px; }
+        .pin-input { background: transparent; border: none; color: white; font-size: 1.5rem; letter-spacing: 3px; width: 120px; text-align: center; border-bottom: 2px solid var(--gold); }
+        .btn-save-pin { background: var(--success-green); color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; width: auto; margin-top: 0; }
+
         /* Login & Modals */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         .login-box { background: var(--card-bg); padding: 40px; border-radius: 8px; border: 2px solid var(--gold); text-align: center; width: 90%; max-width: 400px; }
@@ -240,6 +245,21 @@
             </div>
             <button onclick="saveHours()" style="margin-top:20px;" data-i18n="save_hours">Öffnungszeiten Speichern</button>
             <div id="hours-message" class="message-box"></div>
+        </div>
+    </div>
+
+    <div class="admin-container">
+        <h2 data-i18n="driver_access_title">🚗 Fahrer Zugang</h2>
+        <div class="service-card">
+            <p style="text-align:center; color:#ccc; margin-bottom:15px;" data-i18n="driver_pin_desc">
+                Legen Sie hier den 6-stelligen PIN fest, den alle Fahrer zum Einloggen benötigen.
+            </p>
+            <div class="pin-box">
+                <span style="font-weight:bold; color:#888;" data-i18n="current_pin">AKTUELLER PIN:</span>
+                <input type="text" id="driver-pin-input" class="pin-input" maxlength="6" placeholder="123456">
+                <button class="btn-save-pin" onclick="saveDriverPin()" data-i18n="save_pin">SPEICHERN</button>
+            </div>
+            <div id="pin-status" class="message-box"></div>
         </div>
     </div>
 
@@ -362,7 +382,10 @@
             day: "Tag", shop_hours: "Restaurant", delivery_hours: "Lieferung (Optional)", save_hours: "Öffnungszeiten Speichern",
             coupon_title: "Coupon Manager", code: "Gutschein-Code *", validity_mode: "Gültigkeits-Modus", mode_range: "Datums-Bereich", mode_recurring: "Monatlich Wiederkehrend",
             valid_now: "Gültig ab sofort?", week_rule: "Woche des Monats", disc_type: "Rabatt Typ", value: "Wert *", min_order: "Mindestbestellwert (€)",
-            categories: "Gültig für Kategorien", save_coupon: "Coupon Speichern", saved_coupons: "Gespeicherte Coupons", validity: "Gültigkeit"
+            categories: "Gültig für Kategorien", save_coupon: "Coupon Speichern", saved_coupons: "Gespeicherte Coupons", validity: "Gültigkeit",
+            // DRIVER PIN TRANSLATIONS
+            driver_access_title: "🚗 Fahrer Zugang", driver_pin_desc: "Legen Sie hier den 6-stelligen PIN fest, den alle Fahrer zum Einloggen benötigen.",
+            current_pin: "AKTUELLER PIN:", save_pin: "SPEICHERN", pin_saved: "PIN erfolgreich gespeichert!", pin_error: "PIN muss mindestens 4 Zeichen haben."
         },
         en: {
             settings_title: "Website Settings", marquee_label: "Marquee Text", whatsapp_label: "WhatsApp Number", save_settings: "Save Settings",
@@ -374,7 +397,10 @@
             day: "Day", shop_hours: "Restaurant Open", delivery_hours: "Delivery Hours", save_hours: "Save Hours",
             coupon_title: "Coupon Manager", code: "Coupon Code *", validity_mode: "Validity Mode", mode_range: "Date Range", mode_recurring: "Monthly Recurring",
             valid_now: "Valid immediately?", week_rule: "Week of Month", disc_type: "Discount Type", value: "Value *", min_order: "Min Order (€)",
-            categories: "Valid Categories", save_coupon: "Save Coupon", saved_coupons: "Saved Coupons", validity: "Validity"
+            categories: "Valid Categories", save_coupon: "Save Coupon", saved_coupons: "Saved Coupons", validity: "Validity",
+            // DRIVER PIN TRANSLATIONS
+            driver_access_title: "🚗 Driver Access", driver_pin_desc: "Set the 6-digit PIN here that all drivers need to login.",
+            current_pin: "CURRENT PIN:", save_pin: "SAVE", pin_saved: "PIN saved successfully!", pin_error: "PIN must have at least 4 chars."
         }
     };
 
@@ -462,6 +488,7 @@
         loadSettings();
         loadHours(); 
         loadCoupons();
+        loadDriverPin(); // Load the PIN
     }
 
     // ==========================================
@@ -689,7 +716,36 @@
     }
 
     // ==========================================
-    // 3. COUPON LOGIC
+    // 3. DRIVER PIN LOGIC (NEW)
+    // ==========================================
+    function loadDriverPin() {
+        db.collection('settings').doc('driver_auth').get().then(doc => {
+            if(doc.exists) {
+                document.getElementById('driver-pin-input').value = doc.data().pin || "";
+            } else {
+                document.getElementById('driver-pin-input').value = "";
+            }
+        });
+    }
+
+    window.saveDriverPin = function() {
+        const newPin = document.getElementById('driver-pin-input').value.trim();
+        const statusEl = document.getElementById('pin-status');
+        
+        if(newPin.length < 4) return alert(translations[currentLang].pin_error);
+
+        db.collection('settings').doc('driver_auth').set({ pin: newPin })
+        .then(() => {
+            statusEl.innerText = translations[currentLang].pin_saved;
+            statusEl.className = "message-box success";
+            statusEl.style.display = "block";
+            setTimeout(() => statusEl.style.display = "none", 3000);
+        })
+        .catch(e => alert("Error: " + e.message));
+    };
+
+    // ==========================================
+    // 4. COUPON LOGIC
     // ==========================================
     const couponForm = document.getElementById('coupon-form');
     
