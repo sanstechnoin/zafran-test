@@ -78,11 +78,17 @@
         .progress-container { display: flex; justify-content: space-between; position: relative; margin-bottom: 30px; padding: 0 10px; }
         
         .progress-line-bg {
-            position: absolute; top: 14px; left: 12%; right: 12%; height: 3px;
+            position: absolute; top: 14px; 
+            left: 12%; 
+            right: 15%; /* Changed from 12% to 15% to shorten the right side */
+            height: 3px;
             background: #444; z-index: 0; border-radius: 2px;
         }
         .progress-line-fill {
-            position: absolute; top: 14px; left: 12%; width: 0%; height: 3px;
+            position: absolute; top: 14px; 
+            left: 12%; 
+            width: 0%; /* JS handles width */
+            height: 3px;
             background: var(--gold); z-index: 0; transition: width 0.6s ease; border-radius: 2px;
         }
 
