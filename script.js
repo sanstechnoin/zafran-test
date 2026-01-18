@@ -412,7 +412,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const summaryData = generateOrderSummary();
             const orderId = `${isDeliveryPage() ? 'delivery' : 'pickup'}-${new Date().getTime()}`;
             
-            // NEW: Generate 4-Digit Order PIN
+            // 1. Generate 4-Digit Order Number (This is your "PIN")
             const orderPin = Math.floor(1000 + Math.random() * 9000).toString();
 
             const orderData = {
@@ -441,38 +441,61 @@ document.addEventListener("DOMContentLoaded", async () => {
             firebaseBtn.disabled = true;
 
             try {
+                // 2. Save to Firebase
                 await db.collection("orders").doc(orderId).set(orderData);
                 
-                // 1. Hide the Order Form
-                document.getElementById('order-form').style.display = 'none'; 
+                // 3. POPULATE THE MODAL (Old List + New Number)
                 
-                // 2. Show Success & PIN Area (instead of popup modal)
-                const successMsg = document.getElementById('order-success-message');
-                if(successMsg) {
-                    successMsg.style.display = 'block';
-                    document.getElementById('display-order-pin').innerText = orderPin;
-                    document.getElementById('track-btn-link').href = `tracker.html?id=${orderId}`;
-                    
-                    // Hide Cart Summary elements to clean up view
-                    document.getElementById('cart-items-container').style.display = 'none';
-                    document.getElementById('cart-summary').style.display = 'none';
-                    const cartTitle = document.querySelector('#cart-content h2');
-                    if(cartTitle) cartTitle.style.display = 'none';
-                    const cartSub = document.querySelector('#cart-content p');
-                    if(cartSub) cartSub.style.display = 'none';
-                    const detailsTitle = document.querySelector('#cart-content h3');
-                    if(detailsTitle) detailsTitle.style.display = 'none';
-                    const hrLine = document.querySelector('#cart-content hr');
-                    if(hrLine) hrLine.style.display = 'none';
-                    
-                    // Clear Cart Memory on success
-                    cart = [];
-                    sessionStorage.removeItem('zafran_cart');
-                    updateCart();
-                } else {
-                    // Fallback to old modal if Success Box is missing
-                    showConfirmationScreen(formData, summaryData); 
+                // A. Build the Old List HTML (Items, Address, Total)
+                let html = `<strong style="color:var(--gold)">Kunde:</strong> ${formData.name}<br>`;
+                if (isDeliveryPage()) {
+                    html += `<strong style="color:var(--gold)">Lieferung an:</strong> ${formData.address.street} ${formData.address.house}, ${formData.address.zip}<br>`;
                 }
+                html += `<strong style="color:var(--gold)">Zeit:</strong> ${formData.time} Uhr<br>`;
+                html += `<strong style="color:var(--gold)">Bestellung:</strong><br>${summaryData.summaryText.replace(/\n/g, '<br>')}`;
+                
+                if (summaryData.discount > 0) {
+                   html += `<br>Zwischensumme: ${summaryData.originalTotal.toFixed(2)} €`;
+                   html += `<br><span style="color:#28a745">Gutschein (${summaryData.couponInfo}): -${summaryData.discount.toFixed(2)} €</span>`;
+                }
+
+                html += `<br><br><strong style="font-size:1.1rem; color:#fff;">Total: ${summaryData.finalTotal.toFixed(2)} €</strong>`;
+                
+                if (formData.notes) {
+                    html += `<br><br><strong style="color:var(--gold)">Anmerkungen:</strong><br>${formData.notes.replace(/\n/g, '<br>')}`;
+                }
+
+                // B. Inject Data into Modal Elements
+                // Ensure your HTML has these IDs in the Success Modal
+                const summaryEl = document.getElementById('success-summary-content');
+                const pinEl = document.getElementById('modal-order-pin');
+                const trackLinkEl = document.getElementById('modal-track-link');
+
+                if (summaryEl) summaryEl.innerHTML = html;
+                if (pinEl) pinEl.innerText = orderPin;
+                if (trackLinkEl) trackLinkEl.href = `tracker.html?id=${orderId}`;
+                
+                // C. Show Modal & Hide Cart
+                closeCart(); 
+                const successModal = document.getElementById('success-modal');
+                if (successModal) successModal.classList.add('flex');
+                
+                // D. Clear Data
+                cart = [];
+                sessionStorage.removeItem('zafran_cart');
+                orderForm.reset();
+                if(currentCoupon) {
+                    currentCoupon = null;
+                    const cInput = document.getElementById('coupon-input');
+                    const cMsg = document.getElementById('coupon-message');
+                    if(cInput) cInput.value = "";
+                    if(cMsg) cMsg.textContent = "";
+                }
+                updateCart();
+                
+                // Reset Button
+                firebaseBtn.innerText = "Kostenpflichtig Bestellen";
+                firebaseBtn.disabled = false;
 
             } catch (error) {
                 console.error("Error sending order: ", error);
@@ -480,7 +503,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 firebaseBtn.innerText = "Kostenpflichtig Bestellen";
                 firebaseBtn.disabled = false;
             }
-            // Note: removed 'finally' block to prevent button reset on success
         });
     }
 
@@ -829,4 +851,5 @@ function validateForm() {
     }
     return true;
 }
+
 
