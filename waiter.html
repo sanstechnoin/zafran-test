@@ -53,6 +53,20 @@
         /* Utility to hide elements */
         .hidden { display: none !important; }
 
+        /* --- NEW: CASH CHECK (DRIVER RETURN) STYLE --- */
+        /* This makes the card flash yellow when driver has cash */
+        .pickup-box.status-cash-check {
+            border: 4px solid #FFC107 !important; /* Thick Yellow Border */
+            background-color: rgba(255, 193, 7, 0.1);
+            animation: pulse-yellow 1.5s infinite alternate;
+            order: -1; /* Forces it to the top of the list */
+        }
+
+        @keyframes pulse-yellow {
+            from { box-shadow: 0 0 10px rgba(255, 193, 7, 0.4); }
+            to { box-shadow: 0 0 30px rgba(255, 193, 7, 0.8); }
+        }
+
         /* --- NEW: PAYMENT MODAL STYLES (The Upgrade) --- */
         #payment-modal {
             position: fixed;
